@@ -47,16 +47,38 @@ module Utilities
     sudo "chmod #{options[:mode]} #{to}" if options[:mode]
     sudo "chown #{options[:owner]} #{to}" if options[:owner]
   end
+
+  def sudo_upload_template(src,dst,options = {})
+    raise Capistrano::Error, "sudo_upload_template requires Source and Destination" if src.nil? or dst.nil?
+    put ERB.new(File.read(File.join(File.expand_path(File.dirname(__FILE__)),src))).result(binding), "/tmp/#{File.basename(dst)}"
+    sudo "mv /tmp/#{File.basename(dst)} #{dst}"
+    sudo "chmod #{options[:mode]} #{dst}" if options[:mode]
+    sudo "chown #{options[:owner]} #{dst}" if options[:owner]
+  end
+
+  def upload_template(src,dst,options = {})
+    raise Capistrano::Error, "put_template requires Source and Destination" if src.nil? or dst.nil?
+    put ERB.new(File.read(File.join(File.expand_path(File.dirname(__FILE__)),src))).result(binding), dst, options
+  end
   
   # utilities.adduser('deploy')
   def adduser(user, options={})
     options[:shell] ||= '/bin/bash' # new accounts on ubuntu 6.06.1 have been getting /bin/sh
     switches = '--disabled-password --gecos ""'
+    switches += " --disabled-login" if options[:disabled_login]
+    switches += " --system" if options[:system]
     switches += " --shell=#{options[:shell]} " if options[:shell]
     switches += ' --no-create-home ' if options[:nohome]
     switches += " --ingroup #{options[:group]} " unless options[:group].nil?
     invoke_command "grep '^#{user}:' /etc/passwd || sudo /usr/sbin/adduser #{user} #{switches}",
     :via => run_method
+  end
+
+  #utilities.addgroup('deploy')
+  def addgroup(group,options={})
+    switches = ''
+    switches += " --system" if options[:system]
+    invoke_command "/usr/sbin/addgroup #{group} #{switches}", :via => run_method
   end
   
   # role = :app
