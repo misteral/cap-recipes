@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{cap-recipes}
-  s.version = "0.3.36"
+  s.version = "0.3.37"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Nathan Esquenazi"]
-  s.date = %q{2009-10-27}
+  s.date = %q{2011-02-07}
   s.description = %q{Battle-tested capistrano recipes for debian, passenger, apache, delayed_job, juggernaut, rubygems, backgroundrb, rails and more}
   s.email = %q{nesquena@gmail.com}
   s.extra_rdoc_files = [
@@ -51,12 +51,34 @@ Gem::Specification.new do |s|
      "lib/cap_recipes/tasks/mongodb.rb",
      "lib/cap_recipes/tasks/mongodb/install.rb",
      "lib/cap_recipes/tasks/mongodb/manage.rb",
+     "lib/cap_recipes/tasks/mysql.rb",
+     "lib/cap_recipes/tasks/mysql/install.rb",
+     "lib/cap_recipes/tasks/mysql/manage.rb",
+     "lib/cap_recipes/tasks/mysql/tuner.rb",
+     "lib/cap_recipes/tasks/nginx.rb",
+     "lib/cap_recipes/tasks/nginx/install.rb",
+     "lib/cap_recipes/tasks/nginx_passenger.rb",
+     "lib/cap_recipes/tasks/nginx_passenger/app.conf",
+     "lib/cap_recipes/tasks/nginx_passenger/hooks.rb",
+     "lib/cap_recipes/tasks/nginx_passenger/install.rb",
+     "lib/cap_recipes/tasks/nginx_passenger/manage.rb",
+     "lib/cap_recipes/tasks/nginx_passenger/nginx.conf",
      "lib/cap_recipes/tasks/passenger.rb",
      "lib/cap_recipes/tasks/passenger/install.rb",
      "lib/cap_recipes/tasks/passenger/manage.rb",
+     "lib/cap_recipes/tasks/postfix.rb",
+     "lib/cap_recipes/tasks/postfix/install.rb",
+     "lib/cap_recipes/tasks/postfix/manage.rb",
      "lib/cap_recipes/tasks/rails.rb",
      "lib/cap_recipes/tasks/rails/hooks.rb",
      "lib/cap_recipes/tasks/rails/manage.rb",
+     "lib/cap_recipes/tasks/redis.rb",
+     "lib/cap_recipes/tasks/redis/install.rb",
+     "lib/cap_recipes/tasks/redis/manage.rb",
+     "lib/cap_recipes/tasks/redis/redis.conf",
+     "lib/cap_recipes/tasks/redis/redis.init",
+     "lib/cap_recipes/tasks/ree.rb",
+     "lib/cap_recipes/tasks/ree/install.rb",
      "lib/cap_recipes/tasks/ruby.rb",
      "lib/cap_recipes/tasks/ruby/install.rb",
      "lib/cap_recipes/tasks/rubygems.rb",
@@ -79,15 +101,15 @@ Gem::Specification.new do |s|
   s.rdoc_options = ["--charset=UTF-8"]
   s.require_paths = ["lib"]
   s.rubyforge_project = %q{cap-recipes}
-  s.rubygems_version = %q{1.3.5}
+  s.rubygems_version = %q{1.3.7}
   s.summary = %q{Battle-tested capistrano recipes for passenger, delayed_job, and more}
   s.test_files = [
     "spec/cap/helper.rb",
      "spec/cap_recipes_spec.rb",
      "spec/spec_helper.rb",
+     "examples/advanced/deploy.rb",
      "examples/advanced/deploy/experimental.rb",
      "examples/advanced/deploy/production.rb",
-     "examples/advanced/deploy.rb",
      "examples/simple/deploy.rb"
   ]
 
@@ -95,7 +117,7 @@ Gem::Specification.new do |s|
     current_version = Gem::Specification::CURRENT_SPECIFICATION_VERSION
     s.specification_version = 3
 
-    if Gem::Version.new(Gem::RubyGemsVersion) >= Gem::Version.new('1.2.0') then
+    if Gem::Version.new(Gem::VERSION) >= Gem::Version.new('1.2.0') then
     else
     end
   else
