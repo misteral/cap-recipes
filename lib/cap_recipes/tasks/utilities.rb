@@ -24,6 +24,42 @@ module Utilities
     question += ' (y/n)'
     ask(question).downcase.include? 'y'
   end
+
+  # Uses the base ruby path to install gem(s), avoids installing the gem if it's already installed.
+  # Installs the gems detailed in +package+, selecting version +version+ if
+  # specified.
+  def gem_install(package, version=nil)
+    tries = 3
+    begin
+      cmd = "#{base_ruby_path}/gem install -y --no-rdoc --no-ri #{version ? '-v '+version.to_s : ''} #{package}"
+      wrapped_cmd = "if ! #{base_ruby_path}/gem list | grep --silent -e '#{package}.*#{version}'; then #{cmd}; fi"
+      send(run_method,wrapped_cmd)
+    rescue Capistrano::Error
+      tries -= 1
+      retry if tries > 0
+    end
+  end
+
+  # Installs the gems detailed in +package+, selecting version +version+ if
+  # specified, after uninstalling all versions of previous gems of +package+
+  def gem_install_only(package, version=nil)
+    tries = 3
+    begin
+      cmd = "if ! #{base_ruby_path}/gem list | grep --silent -e '#{package}.*#{version}'; then #{base_ruby_path}/gem uninstall --ignore-dependencies --executables --all #{package}; #{base_ruby_path}/gem install -y --no-rdoc --no-ri #{version ? '-v '+version.to_s : ''} #{package}; fi"
+      send(run_method,cmd)
+    rescue Capistrano::Error
+      tries -= 1
+      retry if tries > 0
+    end
+  end
+
+  # uninstalls the gems detailed in +package+, selecting version +version+ if
+  # specified, otherwise all.
+  def gem_uninstall(package, version=nil)
+    cmd = "gem uninstall --ignore-dependencies --executables #{version ? '-v '+version.to_s  : '--all'} #{package}"
+    wrapped_cmd = "if gem list | grep --silent -e '#{package}.*#{version}'; then #{cmd}; fi"
+    send(run_method,wrapped_cmd)
+  end
   
   # utilities.apt_install %w[package1 package2]
   # utilities.apt_install "package1 package2"
@@ -48,6 +84,8 @@ module Utilities
     sudo "chown #{options[:owner]} #{to}" if options[:owner]
   end
 
+  # Upload a file relative to utilities.rb, running it through ERB
+  #TODO: Check for the file in the deploy.rb directory path first and return that template if present.
   def sudo_upload_template(src,dst,options = {})
     raise Capistrano::Error, "sudo_upload_template requires Source and Destination" if src.nil? or dst.nil?
     put ERB.new(File.read(File.join(File.expand_path(File.dirname(__FILE__)),src))).result(binding), "/tmp/#{File.basename(dst)}"
@@ -55,7 +93,8 @@ module Utilities
     sudo "chmod #{options[:mode]} #{dst}" if options[:mode]
     sudo "chown #{options[:owner]} #{dst}" if options[:owner]
   end
-
+  
+  # Upload a file relative to utilities.rb, running it through ERB
   def upload_template(src,dst,options = {})
     raise Capistrano::Error, "put_template requires Source and Destination" if src.nil? or dst.nil?
     put ERB.new(File.read(File.join(File.expand_path(File.dirname(__FILE__)),src))).result(binding), dst, options

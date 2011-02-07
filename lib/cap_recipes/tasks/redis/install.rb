@@ -1,5 +1,5 @@
+# @author Donovan Bray <donnoman@donovanbray.com>
 require File.expand_path(File.dirname(__FILE__) + '/../utilities')
-require File.expand_path(File.dirname(__FILE__) + '/../aptitude/manage')
 
 Capistrano::Configuration.instance(true).load do
 
@@ -14,8 +14,15 @@ Capistrano::Configuration.instance(true).load do
     
     #TODO build option to enable building with tcmalloc https://github.com/antirez/redis
 
+    #Trying to create a Consistent DSL
+    # :install is all about making a startable basic service/function; getting code on the box, compiling, start scripts etc.
+    # :setup is all about pushing the system level config files that will make the service operate the way we want.
+    #        We abstract it this way, so that when making  changes to the setup files it doesn't require calling the install tasks,
+    #        which may either take longer, be unnecessary or could potentially be destructive.
+    # :configure is all about pushing application level config files
+
     desc "install redis-server"
-    task :setup, :role => :db do
+    task :install, :role => :db do
       utilities.apt_install %w[build-essential wget]
       utilities.addgroup "redis", :system => true
       utilities.adduser "redis" , :nohome => true, :group => "redis", :system => true, :disabled_login => true
@@ -27,10 +34,15 @@ Capistrano::Configuration.instance(true).load do
       utilities.sudo_upload_template "redis/redis.init", "/etc/init.d/redis", :mode => "+x", :owner => 'root:root'
       sudo "touch /var/log/redis.log"
       sudo "chown redis:redis /var/log/redis.log"
-      utilities.sudo_upload_template "redis/redis.conf", "#{redis_path}/redis.conf"
+      setup
       sudo "chown -R redis:redis #{redis_path}"
       sudo "update-rc.d -f redis defaults"
       start
+    end
+
+    desc "setup redis-server"
+    task :setup, :role => :db do
+      utilities.sudo_upload_template "redis/redis.conf", "#{redis_path}/redis.conf", :owner => "redis:redis"
     end
   end
 end

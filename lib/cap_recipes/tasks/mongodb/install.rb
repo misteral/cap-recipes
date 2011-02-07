@@ -8,8 +8,11 @@ Capistrano::Configuration.instance(true).load do
   namespace :mongodb do    
     desc "Installs mongodb binaries and all dependencies"
     task :install, :role => :app do
-      utilities.apt_install "tcsh scons g++ libpcre++-dev"
-      utilities.apt_install "libboost1.37-dev libreadline-dev xulrunner-dev"
+      #Package libboost1.37-dev has no installation candidate Target Ubuntu 10.04, changed to libboost-dev
+      #ref http://www.mongodb.org/display/DOCS/Building+for+Linux
+      utilities.apt_install "git-core tcsh scons g++ libpcre++-dev"
+      utilities.apt_install "libboost-dev libreadline-dev xulrunner-dev"
+      utilities.apt_install "libboost-program-options-dev libboost-thread-dev libboost-filesystem-dev libboost-date-time-dev"
       mongodb.make_spidermonkey
       mongodb.make_mongodb
       mongodb.setup_db_path
