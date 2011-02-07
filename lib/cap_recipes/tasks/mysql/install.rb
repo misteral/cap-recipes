@@ -35,7 +35,6 @@ Capistrano::Configuration.instance(true).load do
           Owners: mysql-server-5.0
           Flags: seen
         }, "non-interactive.txt"
-        raise
         sudo "DEBIAN_FRONTEND=noninteractive DEBCONF_DB_FALLBACK=Pipe apt-get -qq -y install mysql-server < non-interactive.txt"
       ensure
         sudo "rm non-interactive.txt"
