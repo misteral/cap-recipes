@@ -42,6 +42,11 @@ Capistrano::Configuration.instance(true).load do
 
     end
     
+    desc "Install Mysql Developement Libraries"
+    task :install_client_libs, :except => {:no_release => true} do
+        utilities.apt_install "libmysqlclient-dev"
+    end
+    
   end
 
 end

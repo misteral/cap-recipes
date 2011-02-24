@@ -26,12 +26,13 @@ Capistrano::Configuration.instance(true).load do
       utilities.apt_install %w[build-essential wget]
       utilities.addgroup "redis", :system => true
       utilities.adduser "redis" , :nohome => true, :group => "redis", :system => true, :disabled_login => true
+      utilities.sudo_upload_template "redis/redis.init", "/etc/init.d/redis", :mode => "+x", :owner => 'root:root'      
       sudo "mkdir -p #{redis_path}"
       run "cd /usr/local/src && #{sudo} wget --tries=2 -c --progress=bar:force #{redis_src} && #{sudo} tar xzf #{redis_ver}.tar.gz"
       run "cd /usr/local/src/#{redis_ver} && #{sudo} make"
+      sudo "/etc/init.d/redis stop;true" #If this is a re-install need to stop redis      
       run "cd /usr/local/src/#{redis_ver} && #{sudo} cp redis-server redis-benchmark redis-cli redis-check-dump redis-check-aof #{redis_path}"
       sudo "cp /usr/local/src/#{redis_ver}/redis.conf #{redis_path}/redis.conf.original"
-      utilities.sudo_upload_template "redis/redis.init", "/etc/init.d/redis", :mode => "+x", :owner => 'root:root'
       sudo "touch /var/log/redis.log"
       sudo "chown redis:redis /var/log/redis.log"
       setup
