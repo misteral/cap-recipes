@@ -6,6 +6,7 @@ Capistrano::Configuration.instance(true).load do
   namespace :nginx_passenger do
 
     set :nginx_passenger_path, '/opt/nginx'
+    set :nginx_conf_path, File.join(File.dirname(__FILE__),'nginx.conf')
 
     #TODO: init scripts
 
@@ -20,7 +21,7 @@ Capistrano::Configuration.instance(true).load do
 
     task :setup, :roles => :app do
       sudo "mkdir -p #{nginx_passenger_path}/conf/sites-available #{nginx_passenger_path}/conf/sites-enabled"
-      utilities.sudo_upload_template('nginx_passenger/nginx.conf',"#{nginx_passenger_path}/conf/nginx.conf")
+      utilities.sudo_upload_template(nginx_conf_path,"#{nginx_passenger_path}/conf/nginx.conf")
     end
 
   end

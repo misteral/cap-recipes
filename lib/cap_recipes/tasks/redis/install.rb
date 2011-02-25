@@ -11,6 +11,8 @@ Capistrano::Configuration.instance(true).load do
     set :redis_bind, nil # ie: 127.0.0.1 will bind to a specific address otherwise all interfaces
     set :redis_port, '6379'
     set :redis_timeout, '300'
+    set :redis_init_path, File.join(File.dirname(__FILE__),'redis.init')
+    set :redis_conf_path, File.join(File.dirname(__FILE__),'redis.conf')
     
     #TODO build option to enable building with tcmalloc https://github.com/antirez/redis
 
@@ -26,7 +28,8 @@ Capistrano::Configuration.instance(true).load do
       utilities.apt_install %w[build-essential wget]
       utilities.addgroup "redis", :system => true
       utilities.adduser "redis" , :nohome => true, :group => "redis", :system => true, :disabled_login => true
-      utilities.sudo_upload_template "redis/redis.init", "/etc/init.d/redis", :mode => "+x", :owner => 'root:root'      
+      utilities.sudo_upload_template redis_init_path, "/etc/init.d/redis", :mode => "+x", :owner => 'root:root'
+      
       sudo "mkdir -p #{redis_path}"
       run "cd /usr/local/src && #{sudo} wget --tries=2 -c --progress=bar:force #{redis_src} && #{sudo} tar xzf #{redis_ver}.tar.gz"
       run "cd /usr/local/src/#{redis_ver} && #{sudo} make"
@@ -43,7 +46,7 @@ Capistrano::Configuration.instance(true).load do
 
     desc "setup redis-server"
     task :setup, :role => :db do
-      utilities.sudo_upload_template "redis/redis.conf", "#{redis_path}/redis.conf", :owner => "redis:redis"
+      utilities.sudo_upload_template redis_conf_path, "#{redis_path}/redis.conf", :owner => "redis:redis"
     end
   end
 end

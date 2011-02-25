@@ -83,11 +83,11 @@ module Utilities
     sudo "chown #{options[:owner]} #{to}" if options[:owner]
   end
 
-  # Upload a file relative to utilities.rb, running it through ERB
-  #TODO: Check for the file in the deploy.rb directory path first and return that template if present.
+  # Upload a file, running it through ERB
+  # utilities.sudo_upload_template('/local/path/to/file','remote/path/to/destination', options)
   def sudo_upload_template(src,dst,options = {})
     raise Capistrano::Error, "sudo_upload_template requires Source and Destination" if src.nil? or dst.nil?
-    put ERB.new(File.read(File.join(File.expand_path(File.dirname(__FILE__)),src))).result(binding), "/tmp/#{File.basename(dst)}"
+    put ERB.new(File.read(src)).result(binding), "/tmp/#{File.basename(dst)}"
     sudo "mv /tmp/#{File.basename(dst)} #{dst}"
     sudo "chmod #{options[:mode]} #{dst}" if options[:mode]
     sudo "chown #{options[:owner]} #{dst}" if options[:owner]
@@ -96,7 +96,7 @@ module Utilities
   # Upload a file relative to utilities.rb, running it through ERB
   def upload_template(src,dst,options = {})
     raise Capistrano::Error, "put_template requires Source and Destination" if src.nil? or dst.nil?
-    put ERB.new(File.read(File.join(File.expand_path(File.dirname(__FILE__)),src))).result(binding), dst, options
+    put ERB.new(File.read(src)).result(binding), dst, options
   end
   
   # utilities.adduser('deploy')
