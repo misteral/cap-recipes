@@ -1,0 +1,20 @@
+aws_access_key_id: <%=aws_access_key_id%>
+aws_secret_access_key: <%=aws_secret_access_key%>
+ssl_cert_dir: <%=fetch(:ssl_cert_dir,'/etc/ssl/certs')%>
+# How many HTTP errors to tolerate before exiting
+s3sync_retries: <%=fetch(:s3sync_retries,'3')%>
+# How many seconds to wait after an http error
+s3sync_waitonerror: <%=fetch(:s3sync_waitonerror,'4')%>
+# Where is your mime.types file
+s3sync_mime_types_file: <%=fetch(:s3sync_mime_types_file,'/etc/mime.types')%>
+# For example Windows-1252.  Defaults to ISO-8859-1.
+s3sync_native_charset: <%=fetch(:s3sync_native_charset,'ISO-8859-1')%>
+# REGULAR   # http://s3.amazonaws.com/bucket/key
+# SUBDOMAIN # http://bucket.s3.amazonaws.com/key
+# VANITY    # http://<vanity_domain>/key
+# Important: For EU-located buckets you should set the calling format to SUBDOMAIN
+# Important: For US buckets with CAPS or other weird traits set the calling format to REGULAR
+s3sync_aws_calling_format: <%=fetch(:s3sync_aws_calling_format,'REGULAR')%>
+<%= %w(ssl_cert_file aws_s3_host http_proxy_host http_proxy_port http_proxy_user http_proxy_password).map {|key|
+    "#{key}: #{fetch(key.to_sym)}" if fetch(key.to_sym,nil)
+}.reject{|x| x.nil?}.join("\n")%>

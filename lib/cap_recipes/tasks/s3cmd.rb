@@ -1,0 +1,1 @@
+Dir[File.join(File.dirname(__FILE__), 's3cmd/*.rb')].sort.each { |lib| require lib }

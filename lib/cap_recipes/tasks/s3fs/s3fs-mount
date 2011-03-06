@@ -1,0 +1,32 @@
+#! /bin/sh
+
+### BEGIN INIT INFO
+# Provides:          s3fs
+# Required-Start:    $all
+# Required-Stop:     $all
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: starts s3fs system
+# Description:       starts s3fs using basic start scripts
+### END INIT INFO
+
+case "$1" in
+  start)
+    echo "Mounting s3fs volume(s)"
+    <%= s3fs_volumes.reject{|v| v.nil?}.map {|v|
+    "#{s3fs_path}/bin/s3fs #{v[:bucket]} #{v[:mount]} #{v[:options]}"
+    }.join("\n")%>
+    ;;
+  stop)
+    echo "Removing s3fs volume(s)"
+    <%= s3fs_volumes.reject{|v| v.nil?}.map {|v|
+    "umount #{v[:mount]}"
+    }.join("\n")%>
+    ;;
+  *)
+    echo "Usage: /etc/init.d/s3fs-mount {start|stop}"
+    exit 1
+    ;;
+esac
+
+exit 0
