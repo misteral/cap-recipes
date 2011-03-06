@@ -1,3 +1,6 @@
+# @author Donovan Bray <donnoman@donovanbray.com>
+require File.expand_path(File.dirname(__FILE__) + '/../utilities')
+
 Capistrano::Configuration.instance(true).load do
 
   namespace :s3sync do
