@@ -27,7 +27,6 @@ Capistrano::Configuration.instance(:must_exist).load do
     
     desc "bundle the release"  
     task :configure, :except => { :no_release => true } do  
-      install
         
       #Don't bother if there's no gemfile.  
       #optionally do it as a specific user to avoid permissions problems  
