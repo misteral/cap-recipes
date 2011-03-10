@@ -18,7 +18,7 @@ Capistrano::Configuration.instance(true).load do
     
     desc 'Installs ssmtp'
     task :install, :roles => :ssmtp do
-      utilities.apt_install "ssmtp"
+      utilities.apt_install "ssmtp mailutils"
       setup
     end
     

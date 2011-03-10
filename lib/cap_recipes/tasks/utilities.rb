@@ -68,6 +68,14 @@ module Utilities
     sudo "#{apt_get} -qyu --force-yes install #{packages.join(" ")}"
   end
   
+  # utilities.apt_reinstall %w[package1 package2]
+  # utilities.apt_reinstall "package1 package2"
+  def apt_reinstall(packages)
+    packages = packages.split(/\s+/) if packages.respond_to?(:split)
+    packages = Array(packages)
+    sudo "#{apt_get} -qyu --force-yes --reinstall install #{packages.join(" ")}"
+  end
+
   def apt_update
     sudo "#{apt_get} -qy update"
   end
