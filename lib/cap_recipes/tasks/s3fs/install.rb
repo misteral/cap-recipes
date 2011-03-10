@@ -4,7 +4,7 @@ require File.expand_path(File.dirname(__FILE__) + '/../utilities')
 Capistrano::Configuration.instance(true).load do
 
   namespace :s3fs do
-
+    roles[:s3fs] #empty role
     set :s3fs_ver, 's3fs-1.40'
     set :s3fs_src, "http://s3fs.googlecode.com/files/s3fs-1.40.tar.gz"
     set :s3fs_path, "/opt/s3fs"
@@ -14,9 +14,9 @@ Capistrano::Configuration.instance(true).load do
     set(:s3fs_password) {"#{aws_access_key_id}:#{aws_secret_access_key}"}
     set :s3fs_volumes, [] #use s3fs.add_s3fs_volume
     
-    # add_s3fs_volume "backups", "/backups"
-    # add_s3fs_volume "ads", "/ads", "-o default_acl=public-read -o allow_other"
-    def add_s3fs_volume(bucket,mount,options=nil)
+    # s3fs.add_volume "backups", "/backups"
+    # s3fs.add_volume "ads", "/ads", "-o default_acl=public-read -o allow_other"
+    def add_volume(bucket,mount,options=nil)
       s3fs_volumes << { :bucket => bucket, :mount => mount, :options => options }
     end
 
@@ -44,12 +44,6 @@ Capistrano::Configuration.instance(true).load do
       utilities.sudo_upload_template s3fs_mount_path, '/etc/init.d/s3fs-mount', :mode => 'u+x'
       sudo "update-rc.d s3fs-mount defaults"
     end
-    
-    %w(start stop).each do |t|
-      desc "#{t} s3fs"
-      task t.to_sym do
-        sudo "/etc/init.d/s3fs-mount #{t}"
-      end
-    end
+
   end
 end

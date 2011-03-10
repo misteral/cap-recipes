@@ -4,7 +4,7 @@ require File.expand_path(File.dirname(__FILE__) + '/../utilities')
 Capistrano::Configuration.instance(true).load do
 
   namespace :redis do
-
+    roles[:redis] #make an empty role
     set :redis_ver, 'redis-2.0.4'
     set :redis_src, "http://redis.googlecode.com/files/redis-2.0.4.tar.gz"
     set :redis_path, "/opt/redis"
