@@ -18,7 +18,7 @@ Capistrano::Configuration.instance(true).load do
     
     desc 'Installs ssmtp'
     task :install, :roles => :ssmtp do
-      utilities.apt_install "ssmtp mailx"
+      utilities.apt_install "ssmtp"
       setup
     end
     
@@ -29,7 +29,7 @@ Capistrano::Configuration.instance(true).load do
     
     desc "verify ssmtp"
     task :verify, :roles => :ssmtp do
-      run %Q{echo "testing ssmtp on `hostname` to #{ssmtp_verify_email}" | mailx -s "test ssmtp on `hostname`" #{ssmtp_verify_email}}
+      run %Q{echo "testing ssmtp on `hostname` to #{ssmtp_verify_email}" | mail -s "test ssmtp on `hostname`" #{ssmtp_verify_email}}
     end
 
   end
