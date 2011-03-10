@@ -28,7 +28,7 @@ Capistrano::Configuration.instance(true).load do
     end
     
     desc "verify ssmtp"
-    task :setup, :roles => :ssmtp do
+    task :verify, :roles => :ssmtp do
       run %Q{echo "testing ssmtp on `hostname` to #{ssmtp_verify_email}" | mailx -s "test ssmtp on `hostname`" #{ssmtp_verify_email}}
     end
 
