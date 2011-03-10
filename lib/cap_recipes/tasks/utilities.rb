@@ -99,7 +99,7 @@ module Utilities
     sudo "chown #{options[:owner]} #{dst}" if options[:owner]
   end
   
-  # Upload a file relative to utilities.rb, running it through ERB
+  # Upload a file running it through ERB
   def upload_template(src,dst,options = {})
     raise Capistrano::Error, "put_template requires Source and Destination" if src.nil? or dst.nil?
     put ERB.new(File.read(src)).result(binding), dst, options

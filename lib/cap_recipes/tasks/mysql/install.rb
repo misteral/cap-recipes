@@ -9,6 +9,7 @@ Capistrano::Configuration.instance(true).load do
     task :install, :roles => :db do
       #TODO: check password security, something seems off after install
       #http://serverfault.com/questions/19367/scripted-install-of-mysql-on-ubuntu
+      #TODO: Break out Client Server Roles into :mysql (client) :mysqld (server)
       begin
         put %Q{
           Name: mysql-server/root_password

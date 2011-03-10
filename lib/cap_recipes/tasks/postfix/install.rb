@@ -7,7 +7,6 @@ Capistrano::Configuration.instance(true).load do
     roles[:postfix] #empty role
     desc 'Installs postfix'
     task :install, :roles => :postfix do
-      puts 'Installing Postfix'
       utilities.apt_install "postfix"
     end
 
