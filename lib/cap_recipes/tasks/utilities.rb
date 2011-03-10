@@ -65,14 +65,20 @@ module Utilities
   def apt_install(packages)
     packages = packages.split(/\s+/) if packages.respond_to?(:split)
     packages = Array(packages)
-    apt_get="DEBCONF_TERSE='yes' DEBIAN_PRIORITY='critical' DEBIAN_FRONTEND=noninteractive apt-get"
     sudo "#{apt_get} -qyu --force-yes install #{packages.join(" ")}"
   end
   
+  def apt_update
+    sudo "#{apt_get} -qy update"
+  end
+
   def apt_upgrade
-    apt_get="DEBCONF_TERSE='yes' DEBIAN_PRIORITY='critical' DEBIAN_FRONTEND=noninteractive apt-get"
     sudo "#{apt_get} -qy update"
     sudo "#{apt_get} -qyu --force-yes upgrade"
+  end
+
+  def apt_get
+    "DEBCONF_TERSE='yes' DEBIAN_PRIORITY='critical' DEBIAN_FRONTEND=noninteractive apt-get"
   end
   
   # utilities.sudo_upload('/local/path/to/file', '/remote/path/to/destination', options)

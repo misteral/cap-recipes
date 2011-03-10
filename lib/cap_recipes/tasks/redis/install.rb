@@ -24,7 +24,7 @@ Capistrano::Configuration.instance(true).load do
     # :configure is all about pushing application level config files
 
     desc "install redis-server"
-    task :install, :role => :db do
+    task :install, :roles => :redis do
       utilities.apt_install %w[build-essential wget]
       utilities.addgroup "redis", :system => true
       utilities.adduser "redis" , :nohome => true, :group => "redis", :system => true, :disabled_login => true
@@ -45,7 +45,7 @@ Capistrano::Configuration.instance(true).load do
     end
 
     desc "setup redis-server"
-    task :setup, :role => :db do
+    task :setup, :roles => :redis do
       utilities.sudo_upload_template redis_conf_path, "#{redis_path}/redis.conf", :owner => "redis:redis"
     end
   end

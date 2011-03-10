@@ -7,7 +7,7 @@ Capistrano::Configuration.instance(true).load do
 
    %w(start stop restart).each do |t|
      desc "#{t} Postfix"
-     task t.to_sym do
+     task t.to_sym, :roles => :postfix do
        sudo "/etc/init.d/postfix #{t}"
      end
    end

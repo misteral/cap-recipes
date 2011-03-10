@@ -6,7 +6,7 @@ Capistrano::Configuration.instance(true).load do
   namespace :postfix do
 
     desc 'Installs postfix'
-    task :install do
+    task :install, :roles => :postfix do
       puts 'Installing Postfix'
       utilities.apt_install "postfix"
     end

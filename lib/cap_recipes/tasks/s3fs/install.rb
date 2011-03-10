@@ -12,7 +12,7 @@ Capistrano::Configuration.instance(true).load do
     set(:aws_access_key_id) { utilities.ask('What is the AWS_ACCESS_KEY_ID?','')}
     set(:aws_secret_access_key) { utilities.ask('What is the AWS_SECRET_ACCESS_KEY?','')}
     set(:s3fs_password) {"#{aws_access_key_id}:#{aws_secret_access_key}"}
-    set :s3fs_volumes, [] #use add_s3fs_volume
+    set :s3fs_volumes, [] #use s3fs.add_s3fs_volume
     
     # add_s3fs_volume "backups", "/backups"
     # add_s3fs_volume "ads", "/ads", "-o default_acl=public-read -o allow_other"
@@ -21,7 +21,7 @@ Capistrano::Configuration.instance(true).load do
     end
 
     desc "install s3fs"
-    task :install do
+    task :install, :roles => :s3fs do
       utilities.apt_install "build-essential libcurl4-openssl-dev pkg-config libxml2-dev libfuse2 libfuse-dev fuse-utils mime-support"
       sudo "mkdir -p #{s3fs_path}"
       run "cd /usr/local/src && #{sudo} wget --tries=2 -c --progress=bar:force #{s3fs_src} && #{sudo} tar xzf #{s3fs_ver}.tar.gz"
@@ -33,7 +33,7 @@ Capistrano::Configuration.instance(true).load do
     end
 
     desc "setup s3fs"
-    task :setup, :role => :db do
+    task :setup, :role => :s3fs do
       sudo "mkdir -p /backups /ads"
       begin
         put s3fs_password, 'passwd-s3fs', :mode => '640'

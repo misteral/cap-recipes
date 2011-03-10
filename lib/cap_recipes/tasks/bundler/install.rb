@@ -9,6 +9,7 @@ Capistrano::Configuration.instance(:must_exist).load do
     set :bundler_rubygems_ver, '1.3.7'
     set(:bundler_user) { user }
     set :bundler_file, "Gemfile"
+    set :bundler_binstubs, true
       
     desc "Update Rubygems to be compatible with bundler"  
     task :update_rubygems, :except => { :no_release => true } do  
@@ -34,7 +35,8 @@ Capistrano::Configuration.instance(:must_exist).load do
         
       args = bundler_opts  
       args << "--path #{bundler_dir}" unless bundler_dir.to_s.empty? || bundler_opts.include?("--system")  
-      args << "--gemfile=#{bundler_file}" unless bundler_file == "Gemfile"  
+      args << "--gemfile=#{bundler_file}" unless bundler_file == "Gemfile"
+      args << "--binstubs" if bundler_binstubs
         
       cmd = "cd #{latest_release}; if [ -f #{bundler_file} ]; then #{bundler_exec} install #{args.join(' ')}; fi"  
       if bundler_opts.include?('--system')
