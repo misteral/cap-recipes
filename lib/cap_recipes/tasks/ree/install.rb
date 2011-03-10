@@ -13,6 +13,8 @@ Capistrano::Configuration.instance(true).load do
     set :ree_from_source, false #if for some reason you can't use the pkg, build it from source
     set :ree_seg_fixup, false # Set to true if your logs are full of 4gb seg fixups and building from source.
     set :base_ruby_path, '/usr/local' #this interaction needs to be tested more, this could be a problem if they install from source
+    set :ree_cflags, ""
+    set :ree_cxxflags, ""
 
     desc "install ree"
     task :install, :except => {:no_release => true} do
@@ -30,8 +32,14 @@ Capistrano::Configuration.instance(true).load do
       # Get rid of the 4gb seg fixup errors
       # from: http://blog.pacharest.com/2009/08/a-bit-technical-nginx-passenger-4gb-seg-fixup/
       # http://groups.google.com/group/emm-ruby/browse_thread/thread/1b9beffe8fa694a7
-      cmd = "/usr/local/src/#{ree_ver}/installer --auto #{base_ruby_path}"
-      cmd = "CFLAGS='-mno-tls-direct-seg-refs' CXXFLAGS='-mno-tls-direct-seg-refs' #{cmd}" if ree_seg_fixup
+      if ree_seg_fixup
+        ree_cflags += " -mno-tls-direct-seg-refs"
+        ree_cxxflags += " -mno-tls-direct-seg-refs"
+      end
+      cmd = ""
+      cmd += "CFLAGS='#{ree_cflags}' " if ree_cflags
+      cmd += "CXXFLAGS='#{ree_cxxflags}' " if ree_cxxflags
+      cmd += "/usr/local/src/#{ree_ver}/installer --auto #{base_ruby_path}"
       sudo cmd
     end
 
