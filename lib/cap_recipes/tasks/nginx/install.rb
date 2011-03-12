@@ -20,8 +20,8 @@ Capistrano::Configuration.instance(true).load do
     end
 
     task :setup, :roles => :web do
-      sudo "mkdir -p #{nginx_root}/conf/sites-available #{nginx_root}/conf/sites-enabled"
-      utilities.sudo_upload_template(nginx_conf_path,"#{nginx_root}/conf/nginx.conf")
+      sudo "mkdir -p #{nginx_root}/sites-available #{nginx_root}/sites-enabled #{nginx_root}"
+      utilities.sudo_upload_template(nginx_conf_path,"#{nginx_root}/nginx.conf")
     end
 
   end
