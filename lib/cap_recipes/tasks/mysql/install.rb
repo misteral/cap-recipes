@@ -5,6 +5,8 @@ Capistrano::Configuration.instance(true).load do
 
   namespace :mysql do
 
+    set(:mysql_admin_password) { utilities.ask "mysql_admin_password:"}
+
     desc "Install Mysql-server"
     task :install, :roles => :db do
       #TODO: check password security, something seems off after install
@@ -37,12 +39,14 @@ Capistrano::Configuration.instance(true).load do
           Flags: seen
         }, "non-interactive.txt"
         sudo "DEBIAN_FRONTEND=noninteractive DEBCONF_DB_FALLBACK=Pipe apt-get -qq -y install mysql-server < non-interactive.txt"
+      rescue
+        raise
       ensure
         sudo "rm non-interactive.txt"
       end
 
     end
-    
+
     desc "Install Mysql Developement Libraries"
     task :install_client_libs, :except => {:no_release => true} do
         utilities.apt_install "libmysqlclient-dev"
