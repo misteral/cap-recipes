@@ -1,5 +1,6 @@
 # @author Donovan Bray <donnoman@donovanbray.com>
 require File.expand_path(File.dirname(__FILE__) + '/../utilities')
+require File.expand_path(File.dirname(__FILE__) + '/install')
 
 Capistrano::Configuration.instance(true).load do
 

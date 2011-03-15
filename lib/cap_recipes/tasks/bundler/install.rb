@@ -38,7 +38,7 @@ Capistrano::Configuration.instance(:must_exist).load do
       args << "--gemfile=#{bundler_file}" unless bundler_file == "Gemfile"
       args << "--binstubs" if bundler_binstubs
         
-      cmd = "cd #{latest_release}; if [ -f #{bundler_file} ]; then #{bundler_exec} install #{args.join(' ')}; fi"  
+      cmd = "cd #{latest_release}; if [ -f #{bundler_file} ]; then #{bundler_exec} check || #{bundler_exec} install #{args.join(' ')}; fi"  
       if bundler_opts.include?('--system')
         cmd = "#{sudo} sh -c '#{cmd}'"
       elsif bundler_user and not bundler_user.empty?
