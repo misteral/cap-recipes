@@ -19,18 +19,18 @@ Capistrano::Configuration.instance(true).load do
 
     desc "Write the application conf"
     task :configure, :roles => :app do
-      utilities.sudo_upload_template nginx_passenger_app_conf_path, "#{nginx_passenger_path}/sites-available/#{application}.conf"
+      utilities.sudo_upload_template nginx_passenger_app_conf_path, "#{nginx_passenger_root}/sites-available/#{application}.conf"
       enable
     end
 
     desc "Enable the application conf"
     task :enable, :roles => :app do
-      sudo "ln -sf #{nginx_passenger_path}/sites-available/#{application}.conf #{nginx_passenger_path}/sites-enabled/#{application}.conf"
+      sudo "ln -sf #{nginx_passenger_root}/sites-available/#{application}.conf #{nginx_passenger_root}/sites-enabled/#{application}.conf"
     end
 
     desc "Disable the application conf"
     task :disable, :roles => :app do
-      sudo "rm #{nginx_passenger_path}/sites-enabled/#{application}.conf"
+      sudo "rm #{nginx_passenger_root}/sites-enabled/#{application}.conf"
     end
 
   end

@@ -1,5 +1,5 @@
 require 'fileutils'
- 
+
 module Utilities 
   # utilities.config_gsub('/etc/example', /(.*)/im, "\\1")
   def config_gsub(file, find, replace)
@@ -10,7 +10,7 @@ module Utilities
     put content, tmp
     sudo "mv #{tmp} #{file}"
   end
-  
+
   # utilities.ask('What is your name?', 'John')
   def ask(question, default='')
     question = "\n" + question.join("\n") if question.respond_to?(:uniq)
@@ -88,7 +88,7 @@ module Utilities
   def apt_get
     "DEBCONF_TERSE='yes' DEBIAN_PRIORITY='critical' DEBIAN_FRONTEND=noninteractive apt-get"
   end
-  
+
   # utilities.sudo_upload('/local/path/to/file', '/remote/path/to/destination', options)
   def sudo_upload(from, to, options={}, &block)
     top.upload from, "/tmp/#{File.basename(to)}", options, &block
@@ -106,13 +106,13 @@ module Utilities
     sudo "chmod #{options[:mode]} #{dst}" if options[:mode]
     sudo "chown #{options[:owner]} #{dst}" if options[:owner]
   end
-  
+
   # Upload a file running it through ERB
   def upload_template(src,dst,options = {})
     raise Capistrano::Error, "put_template requires Source and Destination" if src.nil? or dst.nil?
     put ERB.new(File.read(src)).result(binding), dst, options
   end
-  
+
   # utilities.adduser('deploy')
   def adduser(user, options={})
     options[:shell] ||= '/bin/bash' # new accounts on ubuntu 6.06.1 have been getting /bin/sh
@@ -132,7 +132,7 @@ module Utilities
     switches += " --system" if options[:system]
     invoke_command "/usr/sbin/addgroup #{group} #{switches}", :via => run_method
   end
-  
+
   # role = :app
   def with_role(role, &block)
     original, ENV['HOSTS'] = ENV['HOSTS'], find_servers(:roles => role).map{|d| d.host}.join(",")
@@ -156,11 +156,11 @@ module Utilities
       set :password, original_password
     end
   end
-  
+
   def space(str)
     "\n#{'=' * 80}\n#{str}"
   end
-  
+
   ##
   # Run a command and ask for input when input_query is seen.
   # Sends the response back to the server.
@@ -171,7 +171,7 @@ module Utilities
   def run_with_input(shell_command, input_query=/^Password/, response=nil)
     handle_command_with_input(:run, shell_command, input_query, response)
   end
- 
+
   ##
   # Run a command using sudo and ask for input when a regular expression is seen.
   # Sends the response back to the server.
@@ -181,13 +181,28 @@ module Utilities
   def sudo_with_input(shell_command, input_query=/^Password/, response=nil)
     handle_command_with_input(:sudo, shell_command, input_query, response)
   end
- 
+
   def invoke_with_input(shell_command, input_query=/^Password/, response=nil)
     handle_command_with_input(run_method, shell_command, input_query, response)
   end
-  
+
+  ##
+  # Run a long bash command thats indented with appropriate ';' that allow the linefeeds to be stripped and make a single concise shell command
+  #
+  # utilities.run_compressed %Q{
+  #   cd /usr/local/src;
+  #   if [ -d "#{mysql_tuner_name}" ]; then
+  #     git pull;
+  #   else
+  #     git clone #{mysql_tuner_src_url} #{mysql_tuner_name};
+  #   fi
+  # }
+  def run_compressed(cmd)
+    run cmd.split("\n").reject(&:empty?).map(&:strip).join(' ')
+  end
+
   private
-  
+
   ##
   # Does the actual capturing of the input and streaming of the output.
   #
@@ -196,7 +211,6 @@ module Utilities
   # input_query: A regular expression matching a request for input: /^Please enter your password/
   def handle_command_with_input(local_run_method, shell_command, input_query, response=nil)
     send(local_run_method, shell_command, {:pty => true}) do |channel, stream, data|
-      
       if data =~ input_query
         if response
           logger.info "#{data} #{"*"*(rand(10)+5)}", channel[:host]
@@ -211,8 +225,8 @@ module Utilities
       end
     end
   end
-  
-  
+
+
 end
- 
+
 Capistrano.plugin :utilities, Utilities
