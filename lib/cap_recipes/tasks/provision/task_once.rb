@@ -51,7 +51,7 @@ module Capistrano
           servers = servers.reject { |server| except.any? { |key,value| server.options[key] == value } }
           
           #allows you to add the option :once to a task ie: task :my_task, :roles => :app, :once => true do ...
-          servers = [servers.first] if options[:once]
+          servers = [servers.first] if options[:once] and servers.size > 1
           logger.trace "servers: #{servers.map { |s| s.host }.inspect}"
           
           filter_server_list(servers.uniq)

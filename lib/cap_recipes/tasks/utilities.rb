@@ -201,6 +201,24 @@ module Utilities
     run cmd.split("\n").reject(&:empty?).map(&:strip).join(' ')
   end
 
+  ##
+  # Checkout something from a git repo update it if it's already checked out
+  #
+  # utilities.git_clone_or_pull "git://github.com/scalarium/server-density-plugins.git", File.join("/usr/local/src","scalarium")
+  #
+  def git_clone_or_pull(repo,dest,branch="master")
+    run_compressed %Q{
+      if [ -d #{dest} ]; then
+        cd #{dest};
+        #{sudo} git fetch origin;
+        #{"#{sudo} git checkout -b #{branch} origin/#{branch};" unless branch == "master"}
+        #{sudo} git pull;
+      else
+        #{sudo} git clone #{repo} #{dest};
+      fi
+    }
+  end
+
   private
 
   ##
