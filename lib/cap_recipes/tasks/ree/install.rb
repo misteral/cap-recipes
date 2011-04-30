@@ -6,15 +6,24 @@ Capistrano::Configuration.instance(true).load do
 
   namespace :ree do
 
-    set :ree_ver, 'ruby-enterprise-1.8.7-2010.02'
-    set :ree_src, "http://rubyforge.org/frs/download.php/71096/ruby-enterprise-1.8.7-2010.02.tar.gz"
-    set :ree_pkg_name, "ruby-enterprise_1.8.7-2010.02_amd64_ubuntu8.04.deb"
-    set :ree_pkg, "http://rubyforge.org/frs/download.php/71097/ruby-enterprise_1.8.7-2010.02_amd64_ubuntu8.04.deb"
+    set :ree_ver, 'ruby-enterprise-1.8.7-2011.03'
+    set :ree_src, "http://rubyenterpriseedition.googlecode.com/files/ruby-enterprise-1.8.7-2011.03.tar.gz"
+    set(:ree_pkg_name) { ree_pkg[target_os].match(/\/([^\/]*)$/)[1] }
+    set(:ree_pkg) {
+      case target_os
+      when :debian64
+        "http://rubyenterpriseedition.googlecode.com/files/ruby-enterprise_1.8.7-2011.03_amd64_debian6.0.deb"
+      else
+        "http://rubyenterpriseedition.googlecode.com/files/ruby-enterprise_1.8.7-2011.03_amd64_ubuntu10.04.deb"
+      end
+    }
     set :ree_from_source, false #if for some reason you can't use the pkg, build it from source
     set :ree_seg_fixup, false # Set to true if your logs are full of 4gb seg fixups and building from source.
     set :base_ruby_path, '/usr/local' #this interaction needs to be tested more, this could be a problem if they install from source
     set :ree_cflags, ""
     set :ree_cxxflags, ""
+    set :ree_tcmalloc, true
+    set :target_os, :ubuntu64
 
     desc "install ree"
     task :install, :except => {:no_release => true} do
@@ -29,6 +38,7 @@ Capistrano::Configuration.instance(true).load do
       utilities.apt_install %w[build-essential libssl-dev libmysqlclient15-dev libreadline5-dev wget]
       #this task doesn't deal with path issues yet
       run "cd /usr/local/src && #{sudo} wget --tries=2 -c --progress=bar:force #{ree_src} && #{sudo} tar xzf #{ree_ver}.tar.gz"
+      run "cd /usr/local/src/#{ree_ver}/source/distro/google-perftools-* && #{sudo} sh -c './configure --prefix=#{base_ruby_path} --disable-dependency-tracking && make libtcmalloc_minimal.la'" if ree_tcmalloc
       # Get rid of the 4gb seg fixup errors
       # from: http://blog.pacharest.com/2009/08/a-bit-technical-nginx-passenger-4gb-seg-fixup/
       # http://groups.google.com/group/emm-ruby/browse_thread/thread/1b9beffe8fa694a7
