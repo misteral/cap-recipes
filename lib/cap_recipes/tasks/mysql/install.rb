@@ -4,14 +4,13 @@ require File.expand_path(File.dirname(__FILE__) + '/../utilities')
 Capistrano::Configuration.instance(true).load do
 
   namespace :mysql do
-
+    roles[:mysqld] #make an empty role
     set(:mysql_admin_password) { utilities.ask "mysql_admin_password:"}
 
     desc "Install Mysql-server"
-    task :install, :roles => :db do
+    task :install, :roles => :mysqld do
       #TODO: check password security, something seems off after install
       #http://serverfault.com/questions/19367/scripted-install-of-mysql-on-ubuntu
-      #TODO: Break out Client Server Roles into :mysql (client) :mysqld (server)
       begin
         put %Q{
           Name: mysql-server/root_password
