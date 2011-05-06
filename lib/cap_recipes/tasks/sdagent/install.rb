@@ -7,7 +7,7 @@ Capistrano::Configuration.instance(true).load do
   namespace :sdagent do
     #todo: deal with adding the unique key for the configuration
     task :install do
-      utilities.apt_install "sd-agent"
+      utilities.apt_install "sd-agent python-mysqldb python-dev"
     end
     
     task :update do 

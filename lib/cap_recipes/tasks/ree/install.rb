@@ -59,6 +59,5 @@ Capistrano::Configuration.instance(true).load do
       sudo "dpkg -i /usr/local/src/#{ree_pkg_name}"
     end
 
-    before "ree:install", "aptitude:updates"
   end
 end

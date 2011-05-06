@@ -7,6 +7,8 @@ Capistrano::Configuration.instance(true).load do
     roles[:s3fs] #empty role
     set :s3fs_ver, 's3fs-1.40'
     set :s3fs_src, "http://s3fs.googlecode.com/files/s3fs-1.40.tar.gz"
+    set :s3fs_fuse_ver, 'fuse-2.8.4'
+    set :s3fs_fuse_src, 'http://sourceforge.net/projects/fuse/files/fuse-2.X/2.8.4/fuse-2.8.4.tar.gz'
     set :s3fs_path, "/opt/s3fs"
     set(:s3fs_mount_path) { File.join(File.dirname(__FILE__),'s3fs-mount')}
     set(:aws_access_key_id) { utilities.ask('What is the AWS_ACCESS_KEY_ID?','')}
@@ -22,7 +24,8 @@ Capistrano::Configuration.instance(true).load do
 
     desc "install s3fs"
     task :install, :roles => :s3fs do
-      utilities.apt_install "build-essential libcurl4-openssl-dev pkg-config libxml2-dev libfuse2 libfuse-dev fuse-utils mime-support"
+      utilities.apt_install "build-essential python-fuse python-boto git-core fuse-utils sshfs libfuse-dev libcurl4-openssl-dev libxml2-dev mime-support libssl-dev"
+      install_fuse
       sudo "mkdir -p #{s3fs_path}"
       run "cd /usr/local/src && #{sudo} wget --tries=2 -c --progress=bar:force #{s3fs_src} && #{sudo} tar xzf #{s3fs_ver}.tar.gz"
       run "cd /usr/local/src/#{s3fs_ver} && #{sudo} ./configure --prefix=#{s3fs_path}"
@@ -30,6 +33,11 @@ Capistrano::Configuration.instance(true).load do
       run "cd /usr/local/src/#{s3fs_ver} && #{sudo} make && #{sudo} make install"
       setup
       start
+    end
+
+    task :install_fuse, :roles => :s3fs do
+      run "cd /usr/local/src && #{sudo} wget --tries=2 -c --progress=bar:force #{s3fs_fuse_src} && #{sudo} tar xzf #{s3fs_fuse_ver}.tar.gz"
+      run "cd /usr/local/src/#{s3fs_fuse_ver} && #{sudo} ./configure --prefix=/usr && #{sudo} make install"
     end
 
     desc "setup s3fs"
