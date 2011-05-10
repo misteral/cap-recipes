@@ -13,8 +13,10 @@ Capistrano::Configuration.instance(true).load do
       case target_os
       when :debian64
         "http://rubyenterpriseedition.googlecode.com/files/ruby-enterprise_1.8.7-2011.03_amd64_debian6.0.deb"
-      else
+      when :ubuntu64
         "http://rubyenterpriseedition.googlecode.com/files/ruby-enterprise_1.8.7-2011.03_amd64_ubuntu10.04.deb"
+      else
+        raise Capistrano::Error "Unhandled target_os in :ree"
       end
     }
     set :ree_from_source, false #if for some reason you can't use the pkg, build it from source
