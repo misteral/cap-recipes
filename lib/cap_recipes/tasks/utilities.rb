@@ -32,7 +32,7 @@ module Utilities
     tries = 3
     begin
       cmd = "#{sudo} #{base_ruby_path}/bin/gem install -y --no-rdoc --no-ri #{version ? '-v '+version.to_s : ''} #{package}"
-      wrapped_cmd = "if ! #{base_ruby_path}/bin/gem list | grep --silent -e '#{package}.*#{version}'; then #{cmd}; fi"
+      wrapped_cmd = "if ! #{base_ruby_path}/bin/gem list '#{package}' | grep --silent -e '#{package}.*#{version}'; then #{cmd}; fi"
       run wrapped_cmd
       #send(run_method,wrapped_cmd)
     rescue Capistrano::Error
@@ -46,7 +46,7 @@ module Utilities
   def gem_install_only(package, version=nil)
     tries = 3
     begin
-      run "if ! #{base_ruby_path}/bin/gem list | grep --silent -e '#{package}.*#{version}'; then #{sudo} #{base_ruby_path}/bin/gem uninstall --ignore-dependencies --executables --all #{package}; #{sudo} #{base_ruby_path}/bin/gem install -y --no-rdoc --no-ri #{version ? '-v '+version.to_s : ''} #{package}; fi"
+      run "if ! #{base_ruby_path}/bin/gem list '#{package}' | grep --silent -e '#{package} \(#{version}\)'; then #{sudo} #{base_ruby_path}/bin/gem uninstall --ignore-dependencies --executables --all #{package}; #{sudo} #{base_ruby_path}/bin/gem install -y --no-rdoc --no-ri #{version ? '-v '+version.to_s : ''} #{package}; fi"
     rescue Capistrano::Error
       tries -= 1
       retry if tries > 0
@@ -57,7 +57,7 @@ module Utilities
   # specified, otherwise all.
   def gem_uninstall(package, version=nil)
     cmd = "#{sudo} #{base_ruby_path}/bin/gem uninstall --ignore-dependencies --executables #{version ? '-v '+version.to_s  : '--all'} #{package}"
-    run "if #{base_ruby_path}/bin/gem list | grep --silent -e '#{package}.*#{version}'; then #{cmd}; fi"
+    run "if #{base_ruby_path}/bin/gem list '#{package}' | grep --silent -e '#{package}.*#{version}'; then #{cmd}; fi"
   end
   
   # utilities.apt_install %w[package1 package2]
