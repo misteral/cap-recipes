@@ -1,3 +1,3 @@
 Capistrano::Configuration.instance(true).load do  
-  after "deploy:provision", "ruby19:install"
+  before "deploy:provision", "ruby19:install"
 end
