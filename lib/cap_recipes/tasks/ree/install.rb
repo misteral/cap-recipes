@@ -8,7 +8,7 @@ Capistrano::Configuration.instance(true).load do
 
     set :ree_ver, 'ruby-enterprise-1.8.7-2011.03'
     set :ree_src, "http://rubyenterpriseedition.googlecode.com/files/ruby-enterprise-1.8.7-2011.03.tar.gz"
-    set(:ree_pkg_name) { ree_pkg[target_os].match(/\/([^\/]*)$/)[1] }
+
     set(:ree_pkg) {
       case target_os
       when :debian64
@@ -19,6 +19,7 @@ Capistrano::Configuration.instance(true).load do
         raise Capistrano::Error "Unhandled target_os in :ree"
       end
     }
+    set(:ree_pkg_name) { ree_pkg.match(/\/([^\/]*)$/)[1] }
     set :ree_from_source, false #if for some reason you can't use the pkg, build it from source
     set :ree_seg_fixup, false # Set to true if your logs are full of 4gb seg fixups and building from source.
     set :base_ruby_path, '/usr/local' #this interaction needs to be tested more, this could be a problem if they install from source
