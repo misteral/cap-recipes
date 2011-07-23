@@ -17,7 +17,7 @@ Capistrano::Configuration.instance(:must_exist).load do
       gem_ver = capture("#{base_ruby_path}/bin/gem --version").chomp
       if gem_ver < bundler_rubygems_minimum_ver
         logger.important "RubyGems needs to be udpated, has gem --version #{gem_ver}"
-        sudo "#{base_ruby_path}/bin/gem update --system"
+        sudo "#{base_ruby_path}/bin/gem update --system #{bundler_rubygems_minimum_ver}"
       end
     end
 
