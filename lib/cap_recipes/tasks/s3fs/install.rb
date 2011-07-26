@@ -42,7 +42,7 @@ Capistrano::Configuration.instance(true).load do
 
     desc "setup s3fs"
     task :setup, :roles => :s3fs do
-      sudo "mkdir -p /backups /ads"
+      sudo "mkdir -p #{s3fs_volumes.reject{|v| v.nil?}.map{|v| v[:mount]}.join(" ")}"
       begin
         put s3fs_password, 'passwd-s3fs', :mode => '640'
         sudo "mv passwd-s3fs /etc/passwd-s3fs"
@@ -51,6 +51,17 @@ Capistrano::Configuration.instance(true).load do
       end
       utilities.sudo_upload_template s3fs_mount_path, '/etc/init.d/s3fs-mount', :mode => 'u+x'
       sudo "update-rc.d s3fs-mount defaults"
+    end
+    
+    desc "stop and prevent start of s3fs on all roles"
+    task :uninstall do
+      utilities.run_compressed %Q{
+        #{sudo} /etc/init.d/s3fs-mount stop;
+        #{sudo} killall s3fs;
+        #{sudo} update-rc.d -f s3fs-mount remove;
+        #{sudo} rm -rf /etc/init.d/s3fs-mount;
+        #{sudo} rm -rf /etc/passwd-s3fs;
+      }
     end
 
   end

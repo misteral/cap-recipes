@@ -13,14 +13,6 @@ Capistrano::Configuration.instance(true).load do
       end
     end
 
-    desc "stop and prevent start of s3fs on all roles"
-    task :uninstall do
-      s3fs.stop
-      utilities.run_compressed %Q{
-        #{sudo} update-rc.d -f s3fs-mount remove;
-        #{sudo} rm -rf /etc/init.d/s3fs-mount;
-      }
-    end
   end
 
 end
