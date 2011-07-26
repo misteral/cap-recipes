@@ -41,7 +41,7 @@ Capistrano::Configuration.instance(true).load do
     end
 
     desc "setup s3fs"
-    task :setup, :role => :s3fs do
+    task :setup, :roles => :s3fs do
       sudo "mkdir -p /backups /ads"
       begin
         put s3fs_password, 'passwd-s3fs', :mode => '640'

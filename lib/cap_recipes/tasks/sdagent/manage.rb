@@ -7,7 +7,7 @@ Capistrano::Configuration.instance(true).load do
   namespace :sdagent do
     %w(start stop restart).each do |t|
       desc "#{t.capitalize} serverdensity agent"
-      task t.to_sym, :role => :db do
+      task t.to_sym do
         sudo "/etc/init.d/sdagent #{t}"
       end
     end
