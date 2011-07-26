@@ -7,13 +7,20 @@ Capistrano::Configuration.instance(true).load do
   namespace :sdagent do
     #todo: deal with adding the unique key for the configuration
     task :install do
+      sudo "wget http://www.serverdensity.com/downloads/boxedice-public.key"
+      sudo "apt-key add boxedice-public.key; rm -f boxedice-public.key"
+      put %Q{
+        deb http://www.serverdensity.com/downloads/linux/debian lenny main
+      },'/tmp/serverdensity.list'
+      sudo "mv /tmp/serverdensity.list /etc/apt/sources.list.d/serverdensity.list"
+      utilities.apt_update
       utilities.apt_install "sd-agent python-mysqldb python-dev"
     end
-    
-    task :update do 
+
+    task :update do
       utilities.apt_update
-      install
+      utilities.apt_install "sd-agent"
     end
-    
+
   end
 end
