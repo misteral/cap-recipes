@@ -21,6 +21,7 @@ Capistrano::Configuration.instance(true).load do
     # Use this helper to upload god conf.d files and reload god
     # god.upload god_contacts_path, "contacts.god"
     def upload(src,name)
+      sudo "mkdir -p #{god_confd}"
       utilities.sudo_upload_template src, "#{god_confd}/#{name}"
       god.reload
     end
