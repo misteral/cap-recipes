@@ -25,6 +25,14 @@ Capistrano::Configuration.instance(true).load do
     set :target_os, :ubuntu64
     set :riak_app_config_path, File.join(File.dirname(__FILE__),'app.config')
     set :riak_vm_args_path, File.join(File.dirname(__FILE__),'vm.args')
+    set :riak_monit_path, File.join(File.dirname(__FILE__),'riak.monit')
+    set :riak_god_path, File.join(File.dirname(__FILE__),'riak.god')
+    set :riak_listen, 'localhost'
+    set :riak_handoff_port, "8099"
+    set :riak_http_port, "8098"
+    set :riak_https_port, "8100"
+    set :riak_pb_port, "8087"
+    set :riak_name, 'riak'
 
     desc "install riak"
     task :install, :roles => :riak do
@@ -43,6 +51,8 @@ Capistrano::Configuration.instance(true).load do
 
     task :install_from_source,  :roles => :riak  do
       #TODO: move binaries into place
+      utilities.addgroup "riak", :system => true
+      utilities.adduser "riak" , :nohome => true, :group => "riak", :system => true, :disabled_login => true      
       run "cd /usr/local/src && #{sudo} wget --tries=2 -c --progress=bar:force #{riak_src} && #{sudo} tar xzf #{riak_ver}.tar.gz"
       run "cd /usr/local/src/#{riak_ver} && #{sudo} make rel"
     end
@@ -51,12 +61,28 @@ Capistrano::Configuration.instance(true).load do
       sudo "wget --tries=2 -c --directory-prefix=/usr/local/src --progress=bar:force #{riak_pkg}"
       sudo "dpkg -i /usr/local/src/#{riak_pkg_name}"
     end
-    
+
     desc "Setup riak"
     task :setup, :roles => :riak do
       utilities.sudo_upload_template riak_app_config_path, "/etc/riak/app.config", :mode => "640", :owner => 'root:riak'
       utilities.sudo_upload_template riak_vm_args_path, "/etc/riak/vm.args", :mode => "640", :owner => 'root:riak'
     end
 
+    desc "setup monit to watch riak"
+    task :setup_monit, :roles => :riak do
+      monit.upload(riak_monit_path,"riak.monit")
+    end
+
+    desc "setup god to watch riak"
+    task :setup_god, :roles => :riak do
+      god.upload(riak_god_path,"riak.god")
+    end
+
+    %w(start stop restart ping force-reload).each do |t|
+      desc "#{t} riak"
+      task t.to_sym, :roles => :riak do
+        sudo "/etc/init.d/riak #{t}"
+      end
+    end
   end
 end

@@ -1,0 +1,13 @@
+#!/bin/sh
+# based on http://stackoverflow.com/questions/3356476/debugging-monit
+# by http://stackoverflow.com/users/248701/billitch
+{
+  echo "MONIT-WRAPPER date"
+  date
+  echo "MONIT-WRAPPER env"
+  env
+  echo "MONIT-WRAPPER $@"
+  $@
+  R=$?
+  echo "MONIT-WRAPPER exit code $R"
+} 2>&1 | logger ; exit ${PIPESTATUS[0]}

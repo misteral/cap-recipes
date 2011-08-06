@@ -1,0 +1,6 @@
+#!/bin/sh
+{
+  $@
+  R=$?
+  echo "MONIT-WRAPPER exit code $R"
+} 2>&1 | logger ; exit ${PIPESTATUS[0]}

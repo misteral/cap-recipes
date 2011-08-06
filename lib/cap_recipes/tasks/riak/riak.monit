@@ -1,0 +1,6 @@
+#TODO: this hasn't been finished or tested, abandoned in favor of GOD
+check process riak every 2 cycles
+   group riak
+   start program = "/etc/monit/morun /etc/init.d/riak start"
+   stop  program = "/etc/monit/morun /etc/init.d/riak stop"
+   if 5 restarts within 5 cycles then timeout

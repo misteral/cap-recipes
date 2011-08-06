@@ -1,6 +1,6 @@
 # If you require the TeeLogger then 
 class TeeLogWriter
-  def initialize
+  def initialize()
     @file=File.open(File.expand_path(File.join(File.dirname(__FILE__),'..','..','..','log','deploy.log')), "w")
   end
 

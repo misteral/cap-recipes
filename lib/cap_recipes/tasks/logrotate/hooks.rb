@@ -1,5 +1,4 @@
 # @author Donovan Bray <donnoman@donovanbray.com>
 Capistrano::Configuration.instance(true).load do
-  after "deploy:update_code", "bundler:configure"
-  after "deploy:provision", "bundler:install"
+  before "deploy:restart", "logrotate:rotate"
 end
