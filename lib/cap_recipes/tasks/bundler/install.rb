@@ -13,7 +13,7 @@ Capistrano::Configuration.instance(:must_exist).load do
     set(:bundler_dir) { "#{shared_path}/bundle" }
     set(:bundler_deploy_dir) { "#{latest_release}/vendor/bundle" }
     set :bundler_rubygems_minimum_ver, '1.3.7'
-    set :bundler_ver, "1.0.15"
+    set :bundler_ver, "1.0.17"
     set(:bundler_user) { user }
     set :bundler_file, "Gemfile"
     set :bundler_binstubs, true

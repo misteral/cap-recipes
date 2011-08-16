@@ -25,7 +25,7 @@ Capistrano::Configuration.instance(true).load do
       utilities.sudo_upload_template src, "#{god_confd}/#{name}"
       god.reload
     end
-    
+
     # TODO: update rubies other than ruby19 to conform
     # New Concept ':except => {:no_ruby => true}' to allow all systems by default 
     # to have ruby installed to allow use of ruby gems like god on all systems
@@ -38,7 +38,7 @@ Capistrano::Configuration.instance(true).load do
       utilities.sudo_upload_template god_init_path, god_init, :mode => "+x"
       sudo "update-rc.d -f god defaults"
     end
-    
+
     desc "setup god"
     task :setup, :except => {:no_ruby => true} do
       sudo "mkdir -p #{god_confd}"
@@ -57,11 +57,18 @@ Capistrano::Configuration.instance(true).load do
       end
     end
 
+    desc "force restart god"
+    task :force_restart, :except => {:no_ruby => true} do
+      god.cmd "quit;true"
+      sudo "/etc/init.d/god stop;true" #just for good measure
+      sudo "/etc/init.d/god start"
+    end
+
     desc "reload the god config"
     task :reload, :except => {:no_ruby => true} do
       god.cmd "load #{god_config};true"
     end
-    
+
     desc "terminate god and everything it's watching"
     task :terminate, :except => {:no_ruby => true } do
       god.cmd "terminate"

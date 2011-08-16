@@ -1,8 +1,8 @@
 Capistrano::Configuration.instance(true).load do
   after "deploy:provision" , "god:install"
   after "god:install", "god:setup"
-  before "deploy:start", "god:restart"
-  before "deploy:restart", "god:restart"
+  after "deploy:start", "god:restart"
+  after "deploy:restart", "god:restart"
   before "god:start", "god:contacts"
   before "god:restart", "god:contacts"
 end
