@@ -13,6 +13,7 @@ Capistrano::Configuration.instance(true).load do
     set :unicorn_tries, -1
     set :unicorn_timeout, 30
     set :unicorn_watcher, nil
+    set :unicorn_suppress_runner, false
     
     desc "select watcher"
     task :watcher do
@@ -26,7 +27,7 @@ Capistrano::Configuration.instance(true).load do
       #rejigger the maintenance tasks to use god when god is in play
       %w(start stop restart).each do |t|
         task t.to_sym, :roles => :app do
-          god.cmd "#{t} unicorn"
+          god.cmd "#{t} unicorn" unless unicorn_suppress_runner
         end
       end
       before "god:restart", "unicorn:setup_god"
