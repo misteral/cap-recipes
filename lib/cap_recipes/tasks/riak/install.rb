@@ -52,7 +52,7 @@ Capistrano::Configuration.instance(true).load do
     task :install_from_source,  :roles => :riak  do
       #TODO: move binaries into place
       utilities.addgroup "riak", :system => true
-      utilities.adduser "riak" , :nohome => true, :group => "riak", :system => true, :disabled_login => true      
+      utilities.adduser "riak" , :nohome => true, :group => "riak", :system => true, :disabled_login => true
       run "cd /usr/local/src && #{sudo} wget --tries=2 -c --progress=bar:force #{riak_src} && #{sudo} tar xzf #{riak_ver}.tar.gz"
       run "cd /usr/local/src/#{riak_ver} && #{sudo} make clean rel"
     end

@@ -6,5 +6,5 @@ Capistrano::Configuration.instance(true).load do
   after "deploy:restart", "unicorn:restart"
   before "deploy:start", "unicorn:configure"
   before "deploy:restart", "unicorn:configure"
-  before "god:restart", "unicorn:setup_god"
+  on :load, "unicorn:watcher"
 end

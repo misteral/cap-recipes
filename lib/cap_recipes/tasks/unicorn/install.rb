@@ -2,6 +2,7 @@ require File.expand_path(File.dirname(__FILE__) + '/../utilities')
 
 Capistrano::Configuration.instance(true).load do
   namespace :unicorn do
+
     set :unicorn_version, "4.0.1"
     set :unicorn_template_path, File.join(File.dirname(__FILE__),'unicorn.rb.template')
     set :unicorn_god_path, File.join(File.dirname(__FILE__),'unicorn.god')
@@ -11,7 +12,25 @@ Capistrano::Configuration.instance(true).load do
     set :unicorn_backlog, 2048
     set :unicorn_tries, -1
     set :unicorn_timeout, 30
+    set :unicorn_watcher, nil
     
+    desc "select watcher"
+    task :watcher do
+      unicorn.send("watch_with_#{unicorn_watcher}".to_sym) unless unicorn_watcher.nil?
+    end
+
+    desc "Use GOD as unicorn's runner"
+    task :watch_with_god do
+      #This is a test pattern, and may not be the best way to handle diverging
+      #maintenance tasks based on which watcher is used but here goes:
+      #rejigger the maintenance tasks to use god when god is in play
+      %w(start stop restart).each do |t|
+        task t.to_sym, :roles => :app do
+          god.cmd "#{t} unicorn"
+        end
+      end
+      before "god:restart", "unicorn:setup_god"
+    end
 
     desc 'Installs unicorn'
     task :install, :roles => :app do
@@ -21,14 +40,6 @@ Capistrano::Configuration.instance(true).load do
     desc "setup god to watch unicorn"
     task :setup_god, :roles => :app do
       god.upload unicorn_god_path, 'unicorn.god'
-      #This is a test pattern, and may not be the best way to handle diverging
-      #maintenance tasks based on which watcher is used but here goes:
-      #rejigger the maintenance tasks to use god when god is in play
-      %w(start stop restart).each do |t|
-        task t.to_sym, :roles => :app do
-          god.cmd "#{t} unicorn"
-        end
-      end
     end
     
     task :configure, :roles => :app do
