@@ -219,7 +219,26 @@ module Utilities
     }
   end
 
+  ##
+  # return the directory that holds the capfile
+  def caproot
+    File.dirname(capfile)
+  end
+
   private
+
+  ##
+  # Find the location of the capfile you can use this to identify a path relative to the capfile.
+  def capfile
+    previous = nil
+    current  = File.expand_path(Dir.pwd)
+
+    until !File.directory?(current) || current == previous
+      filename = File.join(current, 'Capfile')
+      return filename if File.file?(filename)
+      current, previous = File.expand_path("..", current), current
+    end
+  end
 
   ##
   # Does the actual capturing of the input and streaming of the output.
