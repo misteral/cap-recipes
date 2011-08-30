@@ -1,12 +1,34 @@
-# If you require the TeeLogger then 
+# If you require the TeeLogger then
 class TeeLogWriter
-  def initialize()
-    @file=File.open(File.expand_path(File.join(File.dirname(__FILE__),'..','..','..','log','deploy.log')), "w")
+  def initialize
+    logdir = FileUtils.mkdir_p(File.join(caproot,'log')).first
+    @file=File.open(File.join(logdir,'deploy.log'), "w")
   end
 
   def puts(message)
     STDOUT.puts message
     @file.puts "[#{Time.now.strftime("%Y-%m-%d %H:%M:%S")}] #{message}"
+  end
+
+  ##
+  # return the directory that holds the capfile
+  def caproot
+    @caproot ||= File.dirname(capfile)
+  end
+
+  private
+
+  ##
+  # Find the location of the capfile
+  def capfile
+    previous = nil
+    current  = File.expand_path(Dir.pwd)
+
+    until !File.directory?(current) || current == previous
+      filename = File.join(current, 'Capfile')
+      return filename if File.file?(filename)
+      current, previous = File.expand_path("..", current), current
+    end
   end
 
 end
