@@ -1,21 +1,18 @@
 God.watch do |w|
   w.name = '<%=riak_name%>'
   w.group = 'riaks'
-  w.interval = 30.seconds
-  
-  # w.uid = 'riak'
-  # w.gid = 'riak'
+  w.interval = 20.seconds
 
   daemon = '<%="#{riak_root}/bin/riak"%>'
 
   w.start   = "#{daemon} start"
   w.stop    = "#{daemon} stop"
-  w.restart = "#{daemon} restart"
 
   w.start_grace = 10.seconds
   w.stop_grace = 10.seconds
+  w.stop_timeout = 20.seconds
   w.restart_grace = 10.seconds
-
+  
   w.log = "<%=%Q{#{riak_root}/log}%>/god.log"
   
   w.transition(:init, { true => :up, false => :start }) do |on|
