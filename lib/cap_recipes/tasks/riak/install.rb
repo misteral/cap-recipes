@@ -33,6 +33,7 @@ Capistrano::Configuration.instance(true).load do
     set :riak_https_port, "8100"
     set :riak_pb_port, "8087"
     set :riak_name, 'riak'
+    set :riak_ring_creation_size, '64'
 
     desc "install riak"
     task :install, :roles => :riak do
