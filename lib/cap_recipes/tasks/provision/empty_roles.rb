@@ -1,4 +1,5 @@
 # Allows Tasks that have no servers to be skipped instead of raising a NoMatchingServersError
+
 module Capistrano
   class Configuration
     module Connections

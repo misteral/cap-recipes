@@ -1,7 +1,7 @@
 God.watch do |w|
   w.name = '<%=riak_name%>'
   w.group = 'riaks'
-  w.interval = 20.seconds
+  w.interval = 40.seconds #give it enough time to remediate before testing it again
 
   daemon = '<%="#{riak_root}/bin/riak"%>'
 
@@ -19,6 +19,7 @@ God.watch do |w|
    on.condition(:http_response_code) do |c|
       c.host = '<%=riak_listen%>'
       c.port = '<%=riak_http_port%>'
+      c.path = '/ping'
       c.code_is = 200
     end
   end
@@ -27,9 +28,11 @@ God.watch do |w|
    on.condition(:http_response_code) do |c|
       c.host = '<%=riak_listen%>'
       c.port = '<%=riak_http_port%>'
+      c.path = '/ping'
       c.code_is = 200
       c.notify = %w[ <%=god_notify_list%> ]
     end
+
   end
 
   # start if process is not running
@@ -37,12 +40,13 @@ God.watch do |w|
    on.condition(:http_response_code) do |c|
       c.host = '<%=riak_listen%>'
       c.port = '<%=riak_http_port%>'
+      c.path = '/ping'
       c.code_is_not = 200
       c.notify = %w[ <%=god_notify_list%> ]
     end
     # failsafe
     on.condition(:tries) do |c|
-      c.times = 2
+      c.times = 5
       c.transition = :start
       c.notify = %w[ <%=god_notify_list%> ]
     end

@@ -22,11 +22,16 @@ require File.expand_path(File.dirname(__FILE__) + '/../utilities')
 Capistrano::Configuration.instance(true).load do
 
   namespace :deploy do
-    
+
+    # Init all base roles so they can be empty
+    roles[:web]
+    roles[:app]
+    roles[:db]
+
     task :provision do
       logger.info "Provisioning Services"
     end
-    
+
   end
 
 end

@@ -17,6 +17,8 @@ Capistrano::Configuration.instance(true).load do
     set :nginx_unicorn_stub_conf_path, File.join(File.dirname(__FILE__),'stub_status.conf')
     set :nginx_unicorn_god_path, File.join(File.dirname(__FILE__),'nginx_unicorn.god')
     set :nginx_unicorn_init_d, "nginx"
+    set :nginx_unicorn_runner, :init
+    set :nginx_unicorn_suppress_runner, false
 
     desc 'Installs nginx for unicorn'
     task :install, :roles => :app do
@@ -29,6 +31,30 @@ Capistrano::Configuration.instance(true).load do
       utilities.sudo_upload_template nginx_unicorn_conf_path,"#{nginx_unicorn_root}/nginx.conf"
       utilities.sudo_upload_template nginx_unicorn_stub_conf_path,"#{nginx_unicorn_root}/conf.d/stub_status.conf"
       utilities.sudo_upload_template nginx_unicorn_init_d_path,"/etc/init.d/#{nginx_unicorn_init_d}", :mode => "u+x"
+    end
+
+    desc "select nginx_unicorn runner"
+    task :runner do
+      nginx_unicorn.send("run_with_#{nginx_unicorn_runner}".to_sym)
+    end
+
+    desc "Use INIT as nginx_unicorn's runner"
+    task :run_with_init do
+      %w(start stop restart).each do |t|
+        task t.to_sym, :roles => :app do
+          sudo "/etc/init.d/#{nginx_unicorn_init_d} #{t}" unless nginx_unicorn_suppress_runner
+        end
+      end
+    end
+
+    desc "Use GOD as haproxy's runner"
+    task :run_with_god do
+      %w(start stop restart).each do |t|
+        task t.to_sym, :roles => :app do
+          god.cmd "#{t} #{nginx_unicorn_init_d}" unless nginx_unicorn_suppress_runner
+        end
+      end
+      before "god:restart", "nginx_unicorn:setup_god"
     end
 
     desc "Nginx Unicorn Reload"

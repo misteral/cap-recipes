@@ -11,13 +11,6 @@ Capistrano::Configuration.instance(true).load do
     set :nginx_unicorn_server_name, 'localhost'
     set :nginx_unicorn_app_conf_path, File.join(File.dirname(__FILE__),'app.conf')
 
-    %w(start stop restart).each do |t|
-      desc "#{t} nginx_unicorn"
-      task t.to_sym, :roles => :app do
-        sudo "/etc/init.d/#{nginx_unicorn_init_d} #{t}"
-      end
-    end
-    
     desc "Write the application conf"
     task :configure, :roles => :app do
       utilities.sudo_upload_template nginx_unicorn_app_conf_path, "#{nginx_unicorn_root}/sites-available/#{application}.conf"

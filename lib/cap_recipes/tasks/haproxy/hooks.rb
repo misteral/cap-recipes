@@ -2,6 +2,6 @@
 Capistrano::Configuration.instance(true).load do
   after "deploy:provision" , "haproxy:install"
   after "haproxy:install", "haproxy:setup"
-  after "haproxy:setup", "haproxy:enable", "haproxy:setup_god", "haproxy:restart"
+  after "haproxy:setup", "haproxy:enable"
   on :load, "haproxy:runner"
 end

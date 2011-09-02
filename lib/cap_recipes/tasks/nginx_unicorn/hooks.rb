@@ -3,8 +3,8 @@
 Capistrano::Configuration.instance(true).load do
   after "deploy:provision", "nginx_unicorn:install"
   after "deploy:setup", "nginx_unicorn:setup"
-  before "god:restart", "nginx_unicorn:setup_god"
   after "logrotate:rotate", "nginx_unicorn:reopen"
+  on :load, "nginx_unicorn:runner"
   
   before "nginx_unicorn:restart" do
     #if this runs too early it interferes with a new checkout of the app

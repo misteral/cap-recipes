@@ -1,11 +1,11 @@
 God.watch do |w|
-  w.name = "nginx"
-  w.group = "nginx_unicorn"
+  w.name = "nginx_unicorn"
+  w.group = "nginx"
   w.interval = 5.seconds # default
-  w.start = "/etc/init.d/nginx start"
-  w.stop = "/etc/init.d/nginx stop"
-  w.restart = "/etc/init.d/nginx restart"
-  w.pid_file = "/var/run/nginx.pid"
+  w.start = "/etc/init.d/<%=nginx_unicorn_init_d%> start"
+  w.stop = "/etc/init.d/<%=nginx_unicorn_init_d%> stop"
+  w.restart = "/etc/init.d/<%=nginx_unicorn_init_d%> restart"
+  w.pid_file = "/var/run/<%=nginx_unicorn_init_d%>.pid"
   
   # clean pid files before start if necessary
   w.behavior(:clean_pid_file)
