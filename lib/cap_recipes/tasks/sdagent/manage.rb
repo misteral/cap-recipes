@@ -8,7 +8,7 @@ Capistrano::Configuration.instance(true).load do
     %w(start stop restart).each do |t|
       desc "#{t.capitalize} serverdensity agent"
       task t.to_sym do
-        sudo "/etc/init.d/sdagent #{t}"
+        sudo "/etc/init.d/sd-agent #{t}"
       end
     end
   end

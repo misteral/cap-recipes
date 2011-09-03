@@ -11,7 +11,7 @@ Capistrano::Configuration.instance(true).load do
     set :haproxy_suppress_runner, false
     set :haproxy_install_from, :package
 
-    desc "Install Varnish"
+    desc "Install Haproxy"
     task :install do
       if haproxy_install_from == :package
         install_from_package
@@ -73,6 +73,6 @@ Capistrano::Configuration.instance(true).load do
     task :setup, :roles => :haproxy do
       utilities.sudo_upload_template haproxy_template_path, "/etc/haproxy/haproxy.cfg", :owner => "#{haproxy_user}:#{haproxy_group}"
     end
-
+    
   end
 end

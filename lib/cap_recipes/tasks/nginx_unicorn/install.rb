@@ -81,6 +81,11 @@ Capistrano::Configuration.instance(true).load do
     task :setup_god, :roles => :app do
       god.upload nginx_unicorn_god_path, "nginx_unicorn.god"
     end
+    
+    desc "Setup sd-agent to collect metrics for nginx"
+    task :setup_sdagent, :roles => :app do
+      sudo "sed -i 's/^.*nginx_status_url.*$/nginx_status_url: http:\\/\\/127.0.0.1\\/nginx_status/g' #{sdagent_root}/config.cfg"
+    end
 
   end
 end
