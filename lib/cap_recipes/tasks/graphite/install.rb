@@ -4,7 +4,10 @@ Capistrano::Configuration.instance(true).load do
     set :graphite_servername, "localhost"
     set :graphite_from_source, true
     set :graphite_compiled_dir, "/usr/local/src"
-    set :graphite_apache_config, File.join(File.dirname(__FILE__),'graphite.conf') 
+    set :graphite_local_data_dir, "/mnt/storage/whisper"
+    set :graphite_apache_config, File.join(File.dirname(__FILE__),'graphite.conf')
+    set :graphite_carbon_conf, File.join(File.dirname(__FILE__),'carbon.conf') 
+    set :graphite_storage_schema, File.join(File.dirname(__FILE__),'storage-schemas.conf') 
     set :pixman_src, "http://cairographics.org/releases/pixman-0.20.2.tar.gz"
     set(:pixman_ver) { pixman_src.match(/\/([^\/]*)\.tar\.gz$/)[1] }
     set :py2cairo_src, "http://cairographics.org/releases/py2cairo-1.8.10.tar.gz"
@@ -64,8 +67,8 @@ Capistrano::Configuration.instance(true).load do
     task :install_carbon, :roles => :graphite do
       run "cd /usr/local/src && #{sudo} wget --tries=2 -c --progress=bar:force #{carbon_src} && #{sudo} tar --no-same-owner -xzf #{carbon_ver}.tar.gz"
       run "cd /usr/local/src/#{carbon_ver} && #{sudo} python setup.py install"
-      run "cd /usr/local/src/#{carbon_ver}/conf && #{sudo} cp carbon.conf.example /opt/graphite/conf/carbon.conf"
-      run "cd /usr/local/src/#{carbon_ver}/conf && #{sudo} cp storage-schemas.conf.example /opt/graphite/conf/storage-schemas.conf"
+      utilities.sudo_upload_template graphite_carbon_conf, "/opt/graphite/conf/carbon.conf", :mode => "644", :owner => 'root:root'
+      utilities.sudo_upload_template graphite_storage_schemas, "/opt/graphite/conf/storage-schemas.conf", :mode => "644", :owner => 'root:root'
     end
     
     desc "Install Graphite"
