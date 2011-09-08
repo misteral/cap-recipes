@@ -68,7 +68,7 @@ Capistrano::Configuration.instance(true).load do
       run "cd /usr/local/src && #{sudo} wget --tries=2 -c --progress=bar:force #{carbon_src} && #{sudo} tar --no-same-owner -xzf #{carbon_ver}.tar.gz"
       run "cd /usr/local/src/#{carbon_ver} && #{sudo} python setup.py install"
       utilities.sudo_upload_template graphite_carbon_conf, "/opt/graphite/conf/carbon.conf", :mode => "644", :owner => 'root:root'
-      utilities.sudo_upload_template graphite_storage_schemas, "/opt/graphite/conf/storage-schemas.conf", :mode => "644", :owner => 'root:root'
+      utilities.sudo_upload_template graphite_storage_schema, "/opt/graphite/conf/storage-schemas.conf", :mode => "644", :owner => 'root:root'
     end
     
     desc "Install Graphite"
