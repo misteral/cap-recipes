@@ -1,10 +1,10 @@
 Capistrano::Configuration.instance(true).load do
 
   namespace :graphite do
-    set :graphite_servername, "localhost"
+    set :graphite_servername, "graphite.staginghr.com"
     set :graphite_from_source, true
     set :graphite_compiled_dir, "/usr/local/src"
-    set :graphite_local_data_dir, "/mnt/storage/whisper"
+    set :graphite_local_data_dir, "/opt/graphite/storage/whisper"
     set :graphite_apache_config, File.join(File.dirname(__FILE__),'graphite.conf')
     set :graphite_carbon_conf, File.join(File.dirname(__FILE__),'carbon.conf') 
     set :graphite_storage_schema, File.join(File.dirname(__FILE__),'storage-schemas.conf') 
@@ -19,7 +19,7 @@ Capistrano::Configuration.instance(true).load do
     set :graphite_src, "http://launchpad.net/graphite/1.0/0.9.8/+download/graphite-web-0.9.8.tar.gz"
     set(:graphite_ver) { graphite_src.match(/\/([^\/]*)\.tar\.gz$/)[1] }
     
-    desc "Install All"
+    desc "Install All" # Seperate out Conf file setup/copy as seperate task in the future
     task :install, :roles => :graphite do
       graphite.install_apt
       graphite.install_python_tools
@@ -29,6 +29,8 @@ Capistrano::Configuration.instance(true).load do
       graphite.install_carbon
       graphite.install_graphite_web
       graphite.install_graphite_apache
+      graphite.setup
+      graphite.restart
     end
       
     desc "Install what we can from apt"
@@ -67,24 +69,28 @@ Capistrano::Configuration.instance(true).load do
     task :install_carbon, :roles => :graphite do
       run "cd /usr/local/src && #{sudo} wget --tries=2 -c --progress=bar:force #{carbon_src} && #{sudo} tar --no-same-owner -xzf #{carbon_ver}.tar.gz"
       run "cd /usr/local/src/#{carbon_ver} && #{sudo} python setup.py install"
-      utilities.sudo_upload_template graphite_carbon_conf, "/opt/graphite/conf/carbon.conf", :mode => "644", :owner => 'root:root'
-      utilities.sudo_upload_template graphite_storage_schema, "/opt/graphite/conf/storage-schemas.conf", :mode => "644", :owner => 'root:root'
     end
     
     desc "Install Graphite"
     task :install_graphite_web, :roles => :graphite do
-       run "cd /usr/local/src && #{sudo} wget --tries=2 -c --progress=bar:force #{graphite_src} && #{sudo} tar --no-same-owner -xzf #{graphite_ver}.tar.gz"
-       run "cd /usr/local/src/#{graphite_ver} && #{sudo} python setup.py install"
-       run "cd /opt/graphite/webapp/graphite && #{sudo} python manage.py syncdb --noinput"
-       sudo "chown -R www-data:www-data /opt/graphite/storage/"
-       
+      run "cd /usr/local/src && #{sudo} wget --tries=2 -c --progress=bar:force #{graphite_src} && #{sudo} tar --no-same-owner -xzf #{graphite_ver}.tar.gz"
+      run "cd /usr/local/src/#{graphite_ver} && #{sudo} python setup.py install"
+      run "cd /opt/graphite/webapp/graphite && #{sudo} python manage.py syncdb --noinput"
+      sudo "chown -R www-data:www-data /opt/graphite/storage/"
     end
     
-    desc "Copy over Graphite Apache Config, restart Apache and Start Carbon Cache Server"
-    task :install_graphite_apache, :roles => :graphite do
+    desc "Copy over Config Files and change permissions"
+    task :setup, :roles => :graphite do
+      utilities.sudo_upload_template graphite_carbon_conf, "/opt/graphite/conf/carbon.conf", :mode => "644", :owner => 'root:root'
+      utilities.sudo_upload_template graphite_storage_schema, "/opt/graphite/conf/storage-schemas.conf", :mode => "644", :owner => 'root:root'
       utilities.sudo_upload_template graphite_apache_config, "/etc/apache2/sites-available/graphite", :mode => "644", :owner => 'root:root'
+    end
+    
+    desc "Restart Apache and stop/start carbon-cache server"
+    task :restart, :roles => :graphite do
       sudo "a2ensite graphite"
       sudo "apache2ctl restart"
+      run "cd /opt/graphite/bin && #{sudo} python carbon-cache.py stop;true"
       run "cd /opt/graphite/bin && #{sudo} python carbon-cache.py start"
     end
     
