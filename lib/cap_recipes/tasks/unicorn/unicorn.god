@@ -1,7 +1,7 @@
 # http://unicorn.bogomips.org/SIGNALS.html
 
 rails_env = "<%=rails_env%>"
-rails_root = "<%="#{deploy_to}/current"%>"
+rails_root = "<%=unicorn_root%>"
 
 God.watch do |w|
   w.name = "unicorn_rails"

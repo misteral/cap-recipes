@@ -14,6 +14,7 @@ Capistrano::Configuration.instance(true).load do
     set :unicorn_timeout, 30
     set :unicorn_watcher, nil
     set :unicorn_suppress_runner, false
+    set :unicorn_root, "#{deploy_to}/current"
     
     desc "select watcher"
     task :watcher do
