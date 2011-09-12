@@ -59,7 +59,7 @@ Capistrano::Configuration.instance(:must_exist).load do
 
     desc "bundle the deploy"
     task :configure, :except => {:no_release => true} do
-      run "mkdir -p #{bundler_dir}; rm -rf #{bundler_deploy_dir}; cp -r #{bundler_dir} #{bundler_deploy_dir}"
+      run "mkdir -p #{bundler_dir}; rm -rf #{bundler_deploy_dir}; cp -r #{bundler_dir} #{bundler_deploy_dir}; rm -rf #{latest_release}/.bundle/config"
       bundle bundler_deploy_dir
     end
 
