@@ -19,8 +19,9 @@ Capistrano::Configuration.instance(true).load do
         raise Capistrano::Error "Unhandled target_os in :riak"
       end
     }
+    set :riak_git_ref, "riak-0.14.2"
+    set :riak_git_repo, "https://github.com/basho/riak.git"
     set(:riak_pkg_name) { riak_pkg.match(/\/([^\/]*)$/)[1] }
-    set :riak_from_source, false
     set :riak_erlang_ver, "otp_src_R13B04"
     set :target_os, :ubuntu64
     set :riak_app_config_path, File.join(File.dirname(__FILE__),'app.config')
@@ -34,6 +35,24 @@ Capistrano::Configuration.instance(true).load do
     set :riak_pb_port, "8087"
     set :riak_name, 'riak'
     set :riak_ring_creation_size, '64'
+    set :riak_install_from, :package
+    set(:riak_root) {
+      #TODO: not fully plumbed, :package does it's own thing and ignores this, :source SHOULD use it but doesn't yet.
+      case riak_install_from
+      when :source, :git
+        "/opt/riak"
+      when :package
+        "/usr/local"
+      end
+    }
+    set(:riak_etc) {
+      case riak_install_from
+      when :source, :package
+        "/etc/riak"
+      when :git
+        "#{riak_root}/etc"
+      end
+    }
 
     desc "install riak"
     task :install, :roles => :riak do
@@ -42,11 +61,7 @@ Capistrano::Configuration.instance(true).load do
       #Erlang is a dependency for anything running riak need to add them to the erlang role.
       roles[:erlang].push(*roles[:riak].to_ary)
       erlang.install
-      if riak_from_source
-        install_from_source
-      else
-        install_from_package
-      end
+      riak.send("install_from_#{riak_install_from}".to_sym)
       riak.setup
     end
 
@@ -63,10 +78,19 @@ Capistrano::Configuration.instance(true).load do
       sudo "dpkg -i /usr/local/src/#{riak_pkg_name}"
     end
 
+    task :install_from_git, :roles => :riak do
+      utilities.addgroup "riak", :system => true
+      utilities.adduser "riak" , :nohome => true, :group => "riak", :system => true, :disabled_login => true
+      #TODO: beginning new pattern of installing things that are compiled to /opt/<package>/[src|etc|bin|var]
+      #This dovetails with mounting ebs volumes to /opt and putting your most important apps there including their data.
+      utilities.git_or_clone riak_git_repo, "#{riak_root}/src/#{riak_git_ref}", riak_git_ref
+      run "cd #{riak_root}/src && make clean rel"
+    end
+
     desc "Setup riak"
     task :setup, :roles => :riak do
-      utilities.sudo_upload_template riak_app_config_path, "/etc/riak/app.config", :mode => "640", :owner => 'root:riak'
-      utilities.sudo_upload_template riak_vm_args_path, "/etc/riak/vm.args", :mode => "640", :owner => 'root:riak'
+      utilities.sudo_upload_template riak_app_config_path, "#{riak_etc}/app.config", :mode => "640", :owner => 'root:riak'
+      utilities.sudo_upload_template riak_vm_args_path, "#{riak_etc}/vm.args", :mode => "640", :owner => 'root:riak'
     end
 
     desc "setup monit to watch riak"
