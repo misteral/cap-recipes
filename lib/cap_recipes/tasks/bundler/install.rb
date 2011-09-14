@@ -1,4 +1,7 @@
 # @author Donovan Bray <donnoman@donovanbray.com>
+
+require File.expand_path(File.dirname(__FILE__) + '/../utilities')
+
 Capistrano::Configuration.instance(:must_exist).load do
 
   namespace :bundler do
@@ -34,7 +37,7 @@ Capistrano::Configuration.instance(:must_exist).load do
       elsif bundler_user and not bundler_user.empty?
         cmd = "sudo -u #{bundler_user} sh -c '#{cmd}'"
       end
-      run cmd
+      utilities.run_with_input(cmd, /yes\/no/, "yes\n") # If prompted with git authenticity of host respond affirmatively.
     end
 
     desc "Update Rubygems to be compatible with bundler"
