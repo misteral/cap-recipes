@@ -28,21 +28,20 @@ Capistrano::Configuration.instance(true).load do
       graphite.install_whisper
       graphite.install_carbon
       graphite.install_graphite_web
-      graphite.install_graphite_apache
       graphite.setup
       graphite.restart
     end
       
     desc "Install what we can from apt"
     task :install_apt, :roles => :graphite do
-      run "sudo apt-get update"
-      utilities.apt_install %w[build-essential wget python-setuptools python-memcache python-sqlite apache2 libapache2-mod-python pkg-config python2.6 python-cairo-dev python2.6-dev libcairo2-dev]
+      utilities.apt_update
+      utilities.apt_install %w[build-essential wget python-setuptools python-memcache python-sqlite apache2 libapache2-mod-python pkg-config python python-cairo-dev python-dev libcairo2-dev]
     end
     
     desc "Install Python Tools"
     task :install_python_tools, :roles => :graphite do
-      sudo "easy_install-2.6 django"
-      sudo "easy_install-2.6 txamqp"
+      sudo "easy_install django"
+      sudo "easy_install txamqp"
     end  
       
     desc "Install Pixman"
