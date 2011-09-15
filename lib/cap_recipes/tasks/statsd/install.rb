@@ -1,9 +1,13 @@
+require File.expand_path(File.dirname(__FILE__) + '/../graphite/install')
+
 Capistrano::Configuration.instance(true).load do
 
   namespace :statsd do
     
+    set :node_ref, '1b0a5cba'
+    set :statsd_ref, '116dfe3682'
     set :statsd_conf, File.join(File.dirname(__FILE__),'statsd.js')
-    set :statsd_init, File.join(File.dirname(__FILE__),'statsd.conf')
+    set :statsd_init, File.join(File.dirname(__FILE__),'statsd.init.sh')
     set :statsd_god_path, File.join(File.dirname(__FILE__),'statsd.god')
     
     desc "install Node.js and StatsD and start/restart daemons"
@@ -17,20 +21,19 @@ Capistrano::Configuration.instance(true).load do
 
     desc "install all necessary apt packages"
     task :install_packages, :roles => :app do
-      utilities.apt_install %[git-core python-setuptools]
+      utilities.apt_install %[git-core python-setuptools upstart]
     end
-    
-    before "statsd:install_packages", "aptitude:updates"
 
     desc "Install Node.js"
     task :install_node, :roles => :app do
-      sudo "git clone https://github.com/joyent/node /opt/node"
-      run "cd /opt/node/ && #{sudo} ./configure && #{sudo} make && #{sudo} make install"
+      utilities.sudo_git_clone_or_pull "git://github.com/joyent/node", "/opt/node/src", node_ref
+      run "cd /opt/node/src && #{sudo} ./configure && #{sudo} make && #{sudo} make install"
     end
 
     desc "Install Etsy Statsd"
     task :install_statsd, :roles => :app do
-      sudo " git clone https://github.com/etsy/statsd.git /opt/statsd"
+      utilities.sudo_git_clone_or_pull "git://github.com/etsy/statsd.git", "/opt/statsd/src", statsd_ref
+      sudo "cp -R /opt/statsd/src/ /opt/statsd/bin"
     end
 
     task :setup, :roles => :app do
@@ -46,15 +49,9 @@ Capistrano::Configuration.instance(true).load do
       utilities.sudo_upload_template statsd_conf, "/etc/statsd/statsd.js", :mode => "644", :owner => 'nobody:nogroup'
     end
     
-    desc "Setup Statsd Server Start Script"
-    task :setup_statsd_start, :roles => :app do
-      sudo "mkdir -p /usr/share/statsd/scripts"
-      utilities.sudo_upload_template statsd_conf, "/usr/share/statsd/scripts/start", :mode => "644", :owner => 'nobody:nogroup'
-    end
-    
     desc "Setup Statsd Init"
     task :setup_statsd_init, :roles => :app do
-      utilities.sudo_upload_template statsd_init, "/etc/init/statsd.conf", :mode => "644", :owner => 'root:root'
+      utilities.sudo_upload_template statsd_init, "/etc/init.d/statsd", :mode => "644", :owner => 'root:root'
     end
     
     desc "Start/Restart Services"

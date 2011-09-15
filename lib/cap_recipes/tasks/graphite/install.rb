@@ -1,7 +1,7 @@
 Capistrano::Configuration.instance(true).load do
 
   namespace :graphite do
-    set :graphite_servername, "graphite.staginghr.com"
+    set :graphite_servername, "localhost"
     set :graphite_from_source, true
     set :graphite_compiled_dir, "/usr/local/src"
     set :graphite_local_data_dir, "/opt/graphite/storage/whisper"
