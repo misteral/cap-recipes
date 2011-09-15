@@ -200,22 +200,28 @@ module Utilities
   def run_compressed(cmd)
     run cmd.split("\n").reject(&:empty?).map(&:strip).join(' ')
   end
+  
+  def sudo_run_compressed(cmd)
+    sudo %Q{sh -c "#{cmd.split("\n").reject(&:empty?).map(&:strip).join(' ')}"}
+  end
 
   ##
-  # Checkout something from a git repo update it if it's already checked out
+  # Checkout something from a git repo, update it if it's already checked out, and checkout the right ref.
+  #   This will leave the checkout on the 'deploy' branch.
   #
-  # utilities.git_clone_or_pull "git://github.com/scalarium/server-density-plugins.git", File.join("/usr/local/src","scalarium")
+  # utilities.sudo_git_clone_or_pull "git://github.com/scalarium/server-density-plugins.git", "/usr/local/src/scalarium"
   #
-  def git_clone_or_pull(repo,dest,branch="master")
-    run_compressed %Q{
+  def git_clone_or_pull(repo,dest,ref="master")
+    sudo_run_compressed %Q{
       if [ -d #{dest} ]; then
         cd #{dest};
-        #{sudo} git fetch origin;
-        #{"#{sudo} git checkout -b #{branch} origin/#{branch};" unless branch == "master"}
-        #{sudo} git pull;
+        git fetch;
       else
-        #{sudo} git clone #{repo} #{dest};
-      fi
+        git clone #{repo} #{dest};
+        cd #{dest};
+        git checkout -b deploy;
+      fi;
+      git reset --hard #{ref};
     }
   end
 
