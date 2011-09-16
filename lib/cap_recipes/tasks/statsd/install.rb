@@ -20,7 +20,7 @@ Capistrano::Configuration.instance(true).load do
 
     desc "install all necessary apt packages"
     task :install_packages, :roles => :app do
-      utilities.apt_install %[git-core python-setuptools upstart]
+      utilities.apt_install %[git-core python-setuptools]
     end
 
     desc "Install Node.js"
