@@ -1,8 +1,8 @@
 God.watch do |w|
   w.name = "statsd"
   w.interval = 5.seconds # default
-  w.start = "service statsd start"
-  w.stop = "service statsd stop"
+  w.start = "/etc/init.d/statsd start"
+  w.stop = "/etc/init.d/statsd stop"
   
   # clean pid files before start if necessar
   

@@ -4,11 +4,12 @@
 #
 # chkconfig: 3 50 50
 # description: StatsD init.d
-. /etc/rc.d/init.d/functions
+#. /etc/rc.d/init.d/functions
 
 prog=statsd
-STATSDDIR=/opt/statsd
-statsd=./stats.js
+node=/usr/local/bin/node
+STATSDDIR=/opt/statsd/bin
+statsd=/opt/statsd/stats.js
 LOG=/var/log/statsd.log
 ERRLOG=/var/log/statsderr.log
 CONFFILE=/etc/statsd/statsd.js
@@ -24,18 +25,18 @@ start() {
 
 	# See if it's already running. Look *only* at the pid file.
 	if [ -f ${pidfile} ]; then
-		failure "PID file exists for statsd"
+		echo "PID file exists for statsd"
 		RETVAL=1
 	else
 		# Run as process
-		${statsd} ${CONFFILE} >> ${LOG} 2>> ${ERRLOG} &
+		${node} ${statsd} ${CONFFILE} >> ${LOG} 2>> ${ERRLOG} &
 		RETVAL=$?
 	
 		# Store PID
 		echo $! > ${pidfile}
 
 		# Success
-		[ $RETVAL = 0 ] && success "statsd started"
+		[ $RETVAL = 0 ] && echo "Statsd Started"
 	fi
 
 	echo
@@ -44,7 +45,10 @@ start() {
 
 stop() {
 	echo -n $"Stopping $prog: "
-	killproc -p ${pidfile}
+
+	if [ -f {$pidfile} ]; then
+	kill -9 `cat ${pidfile}`
+	fi
 	RETVAL=$?
 	echo
 	[ $RETVAL = 0 ] && rm -f ${pidfile}
@@ -55,10 +59,14 @@ case "$1" in
   start)
 	start
 	;;
-  stop)
-	stop
+  stop)	
+    if [ ! -f ${pidfile} ] ; then
+	   echo "Statsd isn't running."
+	else
+	stop  
+    fi
 	;;
-  status)
+  stats)
 	status -p ${pidfile} ${prog}
 	RETVAL=$?
 	;;
