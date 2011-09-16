@@ -19,6 +19,7 @@ Capistrano::Configuration.instance(true).load do
     set :nginx_unicorn_init_d, "nginx"
     set :nginx_unicorn_runner, :init
     set :nginx_unicorn_suppress_runner, false
+    set(:nginx_unicorn_upstream_socket){"#{shared_path}/sockets/unicorn.sock"}
 
     desc 'Installs nginx for unicorn'
     task :install, :roles => :app do

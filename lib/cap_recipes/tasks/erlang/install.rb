@@ -17,5 +17,10 @@ Capistrano::Configuration.instance(true).load do
       run "cd /usr/local/src/#{erlang_ver} && #{sudo} ./configure --prefix=#{erlang_prefix} && #{sudo} make install"
     end
 
+    desc "Return the installed erlang version"
+    task :version, :roles => :erlang do
+      run %Q{erl -noshell -eval 'io:fwrite(erlang:system_info(otp_release)), io:fwrite("\n"), init:stop().'}
+    end
+
   end
 end

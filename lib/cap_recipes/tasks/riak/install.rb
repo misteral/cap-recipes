@@ -19,10 +19,12 @@ Capistrano::Configuration.instance(true).load do
         raise Capistrano::Error "Unhandled target_os in :riak"
       end
     }
-    set :riak_git_ref, "riak-0.14.2"
+    # this recipe temporarily only works for git installed riak 1.0 because of incompatable dependencies of erlang.
+    # will standardize the other methods when 1.0 is released.
+    set :riak_git_ref, "riak-1.0.0pre3"
     set :riak_git_repo, "https://github.com/basho/riak.git"
     set(:riak_pkg_name) { riak_pkg.match(/\/([^\/]*)$/)[1] }
-    set :riak_erlang_ver, "otp_src_R13B04"
+    set :riak_erlang_ver, "otp_src_R14B03"
     set :target_os, :ubuntu64
     set :riak_app_config_path, File.join(File.dirname(__FILE__),'app.config')
     set :riak_vm_args_path, File.join(File.dirname(__FILE__),'vm.args')
@@ -34,8 +36,10 @@ Capistrano::Configuration.instance(true).load do
     set :riak_https_port, "8100"
     set :riak_pb_port, "8087"
     set :riak_name, 'riak'
-    set :riak_ring_creation_size, '64'
-    set :riak_install_from, :package
+    set :riak_install_from, :git
+    set :riak_search, true
+    set :riak_ring_creation_size, '512'
+    set :riak_backend, "riak_kv_eleveldb_backend" # riak_kv_eleveldb_backend | riak_kv_bitcask_backend
     set(:riak_root) {
       #TODO: not fully plumbed, :package does it's own thing and ignores this, :source SHOULD use it but doesn't yet.
       case riak_install_from
@@ -83,8 +87,8 @@ Capistrano::Configuration.instance(true).load do
       utilities.adduser "riak" , :nohome => true, :group => "riak", :system => true, :disabled_login => true
       #TODO: beginning new pattern of installing things that are compiled to /opt/<package>/[src|etc|bin|var]
       #This dovetails with mounting ebs volumes to /opt and putting your most important apps there including their data.
-      utilities.git_or_clone riak_git_repo, "#{riak_root}/src/#{riak_git_ref}", riak_git_ref
-      run "cd #{riak_root}/src && make clean rel"
+      utilities.git_clone_or_pull riak_git_repo, "#{riak_root}/src", riak_git_ref
+      run "cd #{riak_root}/src && #{sudo} rm -rf #{riak_root}/src/rel/riak && #{sudo} make rel"
     end
 
     desc "Setup riak"
