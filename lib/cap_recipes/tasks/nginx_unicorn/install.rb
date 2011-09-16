@@ -85,7 +85,10 @@ Capistrano::Configuration.instance(true).load do
     
     desc "Setup sd-agent to collect metrics for nginx"
     task :setup_sdagent, :roles => :app do
-      sudo "sed -i 's/^.*nginx_status_url.*$/nginx_status_url: http:\\/\\/127.0.0.1\\/nginx_status/g' #{sdagent_root}/config.cfg"
+      # block executing this task if :sdagent isn't present on any :app servers.
+      if (find_servers(:roles => :app).map{|d| d.host} && find_servers(:roles => :sdagent).map{|d| d.host}).any?
+        sudo "sed -i 's/^.*nginx_status_url.*$/nginx_status_url: http:\\/\\/127.0.0.1\\/nginx_status/g' #{sdagent_root}/config.cfg"
+      end
     end
 
   end

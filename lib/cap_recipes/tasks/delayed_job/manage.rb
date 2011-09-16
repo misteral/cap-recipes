@@ -6,6 +6,12 @@ Capistrano::Configuration.instance(true).load do
   set :delayed_job_role, :app
   set :base_ruby_path,   '/usr'
 
+  # TODO: I think the with_role pattern is broken, if you override delayed_job_role in your deploy.rb it's too late.
+  # the task has been associated with :app at recipe load time. Thats probably why with_role was created so that the 
+  # role could be re-evaluated at execution time making setting the role at load time meaningless. A better pattern 
+  # that I've started elsewhere is to create an empty role and associate servers with the role which CAN happen at 
+  # load time. See: riak as an example.  -- donnoman
+
   namespace :delayed_job do
     desc "Start delayed_job process"
     task :start, :roles => delayed_job_role do
