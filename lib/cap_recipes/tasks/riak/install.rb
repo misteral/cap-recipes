@@ -7,21 +7,21 @@ Capistrano::Configuration.instance(true).load do
 
   namespace :riak do
     roles[:riak]
-    set :riak_src, "http://downloads.basho.com/riak/riak-0.14/riak-0.14.2.tar.gz"
+    set :riak_src, "http://downloads.basho.com/riak/riak-1.0.0pre4/riak-1.0.0pre4.tar.gz"
     set(:riak_ver) { riak_src.match(/\/([^\/]*)\.tar\.gz$/)[1] }
     set(:riak_pkg) {
       case target_os
       when :debian64, :ubuntu64
-        "http://downloads.basho.com/riak/riak-0.14/riak_0.14.2-1_amd64.deb"
+        "http://downloads.basho.com/riak/riak-1.0.0pre4/riak_1.0.0pre4-1_amd64.deb"
       when :debian32, :ubuntu32
-        "http://downloads.basho.com/riak/riak-0.14/riak_0.14.2-1_i386.deb"
+        "http://downloads.basho.com/riak/riak-1.0.0pre4/riak_1.0.0pre4-1_i386.deb"
       else
         raise Capistrano::Error "Unhandled target_os in :riak"
       end
     }
     # this recipe temporarily only works for git installed riak 1.0 because of incompatable dependencies of erlang.
     # will standardize the other methods when 1.0 is released.
-    set :riak_git_ref, "riak-1.0.0pre3"
+    set :riak_git_ref, "riak-1.0.0pre4"
     set :riak_git_repo, "https://github.com/basho/riak.git"
     set(:riak_pkg_name) { riak_pkg.match(/\/([^\/]*)$/)[1] }
     set :riak_erlang_ver, "otp_src_R14B03"
