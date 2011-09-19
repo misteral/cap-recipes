@@ -7,7 +7,7 @@
 prog=statsd
 node=/usr/local/bin/node
 STATSDDIR=/opt/statsd/bin
-statsd=/opt/statsd/stats.js
+statsd=/opt/statsd/bin/stats.js
 LOG=/var/log/statsd.log
 ERRLOG=/var/log/statsderr.log
 CONFFILE=/etc/statsd/statsd.js
