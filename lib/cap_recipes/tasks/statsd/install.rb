@@ -39,7 +39,7 @@ Capistrano::Configuration.instance(true).load do
       statsd.setup_statsd_conf
       statsd.setup_statsd_init
       statsd.setup_statsd_start
-      statsd.setup_god
+      # statsd.setup_god (removed because app servers call god manually, no conf.d)
     end
     
     desc "Setup Statsd Server config"
