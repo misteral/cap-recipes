@@ -1,10 +1,8 @@
 #!/bin/bash
 #
 # StatsD
-#
-# chkconfig: 3 50 50
-# description: StatsD init.d
-#. /etc/rc.d/init.d/functions
+# 
+# description: StatsD init.d from rrussell
 
 prog=statsd
 node=/usr/local/bin/node
@@ -65,10 +63,6 @@ case "$1" in
 	else
 	stop  
     fi
-	;;
-  stats)
-	status -p ${pidfile} ${prog}
-	RETVAL=$?
 	;;
   restart)
 	stop
