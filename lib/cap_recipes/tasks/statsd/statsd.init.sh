@@ -75,7 +75,7 @@ case "$1" in
 	fi
 	;;
   *)
-	echo $"Usage: $prog {start|stop|restart|condrestart|status}"
+	echo $"Usage: $prog {start|stop|restart|condrestart}"
 	exit 1
 esac
 
