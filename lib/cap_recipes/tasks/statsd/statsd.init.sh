@@ -58,7 +58,7 @@ case "$1" in
 	start
 	;;
   stop)	
-    if [ ! -f ${pidfile} ] ; then
+    if [ ! -f ${pidfile} ]; then
 	   echo "Statsd isn't running."
 	else
 	stop  
@@ -69,7 +69,7 @@ case "$1" in
 	start
 	;;
   condrestart)
-	if [ -f ${pidfile} ] ; then
+	if [ -f ${pidfile} ]; then
 		stop
 		start
 	fi
