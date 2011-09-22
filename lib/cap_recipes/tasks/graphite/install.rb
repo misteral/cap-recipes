@@ -1,6 +1,7 @@
 Capistrano::Configuration.instance(true).load do
 
   namespace :graphite do
+    roles[:graphite]
     set :graphite_servername, "localhost"
     set :graphite_from_source, true
     set :graphite_compiled_dir, "/usr/local/src"
