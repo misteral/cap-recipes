@@ -1,7 +1,7 @@
 Capistrano::Configuration.instance(true).load do
 
   namespace :rsyslog_server do
-    set :rsyslog_server, 'logs.offerify.net'
+    set :rsyslog_server, 'logs.example.net'
     set :rsyslog_server_conf, File.join(File.dirname(__FILE__),'rsyslog-server.conf')
     set :rsyslog_demandchain_conf, File.join(File.dirname(__FILE__),'demandchain-rlog.conf')
     set :rsyslog_cron, File.join(File.dirname(__FILE__),'rsyslog-compress.cron')
