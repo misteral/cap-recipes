@@ -48,12 +48,12 @@ Capistrano::Configuration.instance(true).load do
       sudo "mkdir -p /etc/statsd"
       utilities.sudo_upload_template statsd_conf, "/etc/statsd/statsd.js", :mode => "644", :owner => 'nobody:nogroup'
     end
-    
+
     desc "Setup Statsd Init"
     task :setup_statsd_init, :roles => :statsd do
       utilities.sudo_upload_template statsd_init, "/etc/init.d/statsd", :mode => "755", :owner => 'root:root'
     end
-    
+
     desc "Start/Restart Services"
     task :setup_statsd_start, :roles => :statsd do
       sudo "/etc/init.d/statsd stop;true"
@@ -64,7 +64,6 @@ Capistrano::Configuration.instance(true).load do
     task :setup_god, :roles => :statsd do
       god.upload(statsd_god_path,"statsd.god")
     end
-          
   end 
    
 end
