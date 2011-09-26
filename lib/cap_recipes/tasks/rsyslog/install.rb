@@ -1,16 +1,15 @@
 Capistrano::Configuration.instance(true).load do
 
   namespace :rsyslog_server do
-    set :rsyslog_server, 'logs.example.net'
     set :rsyslog_server_conf, File.join(File.dirname(__FILE__),'rsyslog-server.conf')
     set :rsyslog_demandchain_conf, File.join(File.dirname(__FILE__),'demandchain-rlog.conf')
     set :rsyslog_cron, File.join(File.dirname(__FILE__),'rsyslog-compress.cron')
 
-    on :start, :only => "deploy:provision" do
-      rsyslog_server.install
-    end
+    #on :start, :only => "deploy:provision" do
+    #  rsyslog_server.install
+    #end
 
-    desc "Install All" # Seperate out Conf file setup/copy as seperate task in the future
+    desc "Install All" 
     task :install, :roles => :rsyslog_server do
       rsyslog_server.install_apt
       rsyslog_server.setup_rsyslog_server_conf
@@ -40,11 +39,18 @@ Capistrano::Configuration.instance(true).load do
 
   end
 
-    namespace :rsyslog_client do
+  namespace :rsyslog_client do
     set :rsyslog_client_conf, File.join(File.dirname(__FILE__),'rsyslog-client.conf')
+    
+    #on :start, :only => "deploy:provision" do
+    #  rsyslog_client.install
+    #  rsyslog_client.setup_rsyslog_client_conf
+    #  rsyslog_client.restart
+    #end
 
-    on :start, :only => "deploy:provision" do
-      rsyslog_client.install
+    desc "Install All" # Seperate out Conf file setup/copy as seperate task in the future
+    task :install, :roles => :rsyslog_client do
+      rsyslog_client.install_apt
       rsyslog_client.setup_rsyslog_client_conf
       rsyslog_client.restart
     end
