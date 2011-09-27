@@ -1,6 +1,7 @@
 Capistrano::Configuration.instance(true).load do
 
   namespace :rsyslog_server do
+    roles[:rsyslog_server]
     set :rsyslog_server_conf, File.join(File.dirname(__FILE__),'rsyslog-server.conf')
     set :rsyslog_demandchain_conf, File.join(File.dirname(__FILE__),'demandchain-rlog.conf')
     set :rsyslog_cron, File.join(File.dirname(__FILE__),'rsyslog-compress.cron')
@@ -40,6 +41,7 @@ Capistrano::Configuration.instance(true).load do
   end
 
   namespace :rsyslog_client do
+    roles[:rsyslog_client]
     set :rsyslog_client_conf, File.join(File.dirname(__FILE__),'rsyslog-client.conf')
     
     #on :start, :only => "deploy:provision" do
@@ -69,8 +71,10 @@ Capistrano::Configuration.instance(true).load do
 
     desc "Restart rsyslog server"
     task :restart, :roles => :rsyslog_client do
-      sudo "service rsyslog restart"
+      sudo "service rsyslog stop"
+      sudo "service rsyslog start"
     end
+
   end
- 
+
 end
