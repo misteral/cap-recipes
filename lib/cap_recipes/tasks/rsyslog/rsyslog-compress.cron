@@ -1,2 +1,0 @@
-# Compress *.log-files not changed in more than 24 hours:
-find /opt/syslog/hosts/ -type f -mtime +1  -name "*.log" -exec bzip2 '{}' \;
