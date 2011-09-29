@@ -3,7 +3,7 @@ require File.expand_path(File.dirname(__FILE__) + '/../utilities')
 Capistrano::Configuration.instance(true).load do
   namespace :unicorn do
 
-    set :unicorn_version, "4.0.1"
+    set :unicorn_version, "4.1.1"
     set :unicorn_template_path, File.join(File.dirname(__FILE__),'unicorn.rb.template')
     set :unicorn_god_path, File.join(File.dirname(__FILE__),'unicorn.god')
     set(:unicorn_user) {user}
@@ -45,20 +45,20 @@ Capistrano::Configuration.instance(true).load do
     end
     
     task :configure, :roles => :app do
-      utilities.upload_template unicorn_template_path, "#{current_release}/config/unicorn.rb"
+      utilities.upload_template unicorn_template_path, "#{latest_release}/config/unicorn.rb"
     end
 
     task :stop, :roles => :app do
-      run "cd #{current_path} && kill -QUIT `cat tmp/pids/unicorn.pid`"
+      run "cd #{latest_release} && kill -QUIT `cat tmp/pids/unicorn.pid`"
     end
 
     task :start, :roles => :app do
-      run "cd #{current_path} && #{base_ruby_path}/bin/unicorn_rails -c config/unicorn.rb -E #{rails_env} -D"
+      run "cd #{latest_release} && #{base_ruby_path}/bin/unicorn_rails -c config/unicorn.rb -E #{rails_env} -D"
     end
 
     desc "restart unicorn"
     task :restart, :roles => :web do
-      run "cd #{current_path}; [ -f tmp/pids/unicorn.pid ] && kill -USR2 `cat tmp/pids/unicorn.pid` || #{base_ruby_path}/bin/unicorn_rails -c config/unicorn.rb -E #{rails_env} -D"
+      run "cd #{latest_release}; [ -f tmp/pids/unicorn.pid ] && kill -USR2 `cat tmp/pids/unicorn.pid` || #{base_ruby_path}/bin/unicorn_rails -c config/unicorn.rb -E #{rails_env} -D"
     end
 
   end
