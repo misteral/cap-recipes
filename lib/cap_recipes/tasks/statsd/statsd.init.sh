@@ -2,7 +2,7 @@
 #
 # StatsD
 # 
-# description: StatsD init.d from rrussell
+# description: StatsD init.d from Rick Russell - sysadmin.rick@gmail.com
 
 prog=statsd
 node=/usr/local/bin/node
