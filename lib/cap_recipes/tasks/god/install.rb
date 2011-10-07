@@ -12,6 +12,9 @@ Capistrano::Configuration.instance(true).load do
     set(:god_log_path) {"/var/log/god.log"}
     set(:god_pid_path) {"/var/run/god.pid"}
     set :god_notify_list, "localhost"
+    set :god_install_from, :package
+    set :god_git_ref, "v0.11.0"
+    set :god_git_repo, "git://github.com/mojombo/god.git"
 
     def cmd(cmd,options={})
       r_env = options[:rails_env] || rails_env
@@ -32,11 +35,27 @@ Capistrano::Configuration.instance(true).load do
     # regardless of whether they have releases deployed to them, they may have other things
     # that we want god to watch on them.
 
-    desc "install god init"
+    desc "install god"
     task :install, :except => {:no_ruby => true} do
-      utilities.gem_install "god"
+      god.send("install_from_#{god_install_from}".to_sym)
       utilities.sudo_upload_template god_init_path, god_init, :mode => "+x"
       sudo "update-rc.d -f god defaults"
+      god.setup
+    end
+
+    desc "install god init"
+    task :install_from_package, :except => {:no_ruby => true} do
+      utilities.gem_install "god"
+    end
+
+    task :install_from_git, :except => {:no_ruby => true} do
+      utilities.git_clone_or_pull(god_git_repo,"/usr/local/src/god",god_git_ref)
+      utilities.run_compressed %Q{
+        cd /usr/local/src/god;
+        #{sudo} rm -f *.gem;
+        #{sudo} gem build *.gemspec;
+        #{sudo} gem install -y --no-rdoc --no-ri *.gem;
+      }
     end
 
     desc "setup god"
