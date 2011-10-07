@@ -13,11 +13,11 @@ Capistrano::Configuration.instance(true).load do
     set(:pixman_ver) { pixman_src.match(/\/([^\/]*)\.tar\.gz$/)[1] }
     set :py2cairo_src, "http://cairographics.org/releases/py2cairo-1.8.10.tar.gz"
     set(:py2cairo_ver) { py2cairo_src.match(/\/([^\/]*)\.tar\.gz$/)[1] }
-    set :whisper_src, "http://launchpad.net/graphite/1.0/0.9.8/+download/whisper-0.9.8.tar.gz"
+    set :whisper_src, "http://launchpad.net/graphite/0.9/0.9.9/+download/whisper-0.9.9.tar.gz"
     set(:whisper_ver) { whisper_src.match(/\/([^\/]*)\.tar\.gz$/)[1] }
-    set :carbon_src, "http://launchpad.net/graphite/1.0/0.9.8/+download/carbon-0.9.8.tar.gz"
+    set :carbon_src, "http://launchpad.net/graphite/0.9/0.9.9/+download/carbon-0.9.9.tar.gz"
     set(:carbon_ver) { carbon_src.match(/\/([^\/]*)\.tar\.gz$/)[1] }
-    set :graphite_src, "http://launchpad.net/graphite/1.0/0.9.8/+download/graphite-web-0.9.8.tar.gz"
+    set :graphite_src, "http://launchpad.net/graphite/0.9/0.9.9/+download/graphite-web-0.9.9.tar.gz"
     set(:graphite_ver) { graphite_src.match(/\/([^\/]*)\.tar\.gz$/)[1] }
     
     desc "Install All" # Seperate out Conf file setup/copy as seperate task in the future
