@@ -60,7 +60,8 @@ Capistrano::Configuration.instance(true).load do
     end
     
     task :setup, :roles => :sdagent do
-      sudo "mkdir -p #{sdagent_plugins_dir}"
+      sudo "mkdir -p #{sdagent_plugins_dir} /var/run/sd-agent"
+      sudo "chown sd-agent:sd-agent /var/run/sd-agent"
     end
 
   end
