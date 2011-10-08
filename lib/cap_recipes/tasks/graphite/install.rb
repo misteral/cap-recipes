@@ -43,6 +43,7 @@ Capistrano::Configuration.instance(true).load do
     task :install_python_tools, :roles => :graphite do
       sudo "easy_install django"
       sudo "easy_install txamqp"
+      sudo "easy_install django-tagging"
     end  
       
     desc "Install Pixman"
