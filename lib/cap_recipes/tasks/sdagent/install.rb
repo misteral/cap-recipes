@@ -44,6 +44,8 @@ Capistrano::Configuration.instance(true).load do
 
     desc "setup god to watch sdagent"
     task :setup_god, :roles => :sdagent do
+      sudo "mkdir -p /var/run/sd-agent"
+      sudo "chown sd-agent:sd-agent /var/run/sd-agent"
       god.upload sdagent_god_path, 'sdagent.god'
       #disable init from automatically starting and stopping sd-agent, giving ec2 instances a chance 
       #to change thier hostname before reporting in to serverdensity
@@ -60,8 +62,7 @@ Capistrano::Configuration.instance(true).load do
     end
     
     task :setup, :roles => :sdagent do
-      sudo "mkdir -p #{sdagent_plugins_dir} /var/run/sd-agent"
-      sudo "chown sd-agent:sd-agent /var/run/sd-agent"
+      sudo "mkdir -p #{sdagent_plugins_dir}"
     end
 
   end
