@@ -49,12 +49,13 @@ Capistrano::Configuration.instance(true).load do
     end
 
     task :install_from_git, :except => {:no_ruby => true} do
+      utilities.gem_install "json"
       utilities.git_clone_or_pull(god_git_repo,"/usr/local/src/god",god_git_ref)
       utilities.run_compressed %Q{
         cd /usr/local/src/god;
         #{sudo} rm -f *.gem;
-        #{sudo} gem build *.gemspec;
-        #{sudo} gem install -y --no-rdoc --no-ri *.gem;
+        #{sudo} #{base_ruby_path}/bin/gem build *.gemspec;
+        #{sudo} #{base_ruby_path}/bin/gem install -y --no-rdoc --no-ri *.gem;
       }
     end
 
