@@ -1,3 +1,4 @@
+# @ author Rick Russell <sysadmin.rick@gmail.com>
 Capistrano::Configuration.instance(true).load do
 
   namespace :graphite do
