@@ -41,7 +41,7 @@ God.watch do |w|
     end
 
     restart.condition(:cpu_usage) do |c|
-      c.above = 50.percent
+      c.above = 90.percent
       c.times = 5
       c.notify = %w[ <%=god_notify_list%> ]
     end
