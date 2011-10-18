@@ -36,7 +36,7 @@ Capistrano::Configuration.instance(true).load do
 
     desc 'Installs unicorn'
     task :install, :roles => :app do
-      utilities.gem_install "unicorn", unicorn_version
+      utilities.gem_install_only "unicorn", unicorn_version
     end
 
     desc "setup god to watch unicorn"
