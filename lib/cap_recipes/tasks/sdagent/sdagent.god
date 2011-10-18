@@ -7,6 +7,9 @@ God.watch do |w|
   w.restart = "/etc/init.d/sd-agent restart"
   w.pid_file = "/var/run/sd-agent/sd-agent.pid"
 
+  FileUtils.mkdir_p File.dirname(w.pid_file)
+  FileUtils.chown 'sd-agent', 'sd-agent', File.dirname(w.pid_file)
+
   # clean pid files before start if necessary
   w.behavior(:clean_pid_file)
 
