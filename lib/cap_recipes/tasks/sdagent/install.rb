@@ -39,7 +39,7 @@ Capistrano::Configuration.instance(true).load do
           god.cmd "#{t} sdagent" unless sdagent_suppress_runner
         end
       end
-      before "god:restart", "sdagent:setup_god"
+      before "god:setup", "sdagent:setup_god"
     end
 
     desc "setup god to watch sdagent"

@@ -31,7 +31,7 @@ Capistrano::Configuration.instance(true).load do
           god.cmd "#{t} unicorn" unless unicorn_suppress_runner
         end
       end
-      before "god:restart", "unicorn:setup_god"
+      after "god:setup", "unicorn:setup_god"
     end
 
     desc 'Installs unicorn'

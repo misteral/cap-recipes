@@ -55,7 +55,7 @@ Capistrano::Configuration.instance(true).load do
           god.cmd "#{t} #{nginx_unicorn_init_d}" unless nginx_unicorn_suppress_runner
         end
       end
-      before "god:restart", "nginx_unicorn:setup_god"
+      after "god:setup", "nginx_unicorn:setup_god"
     end
 
     desc "Nginx Unicorn Reload"

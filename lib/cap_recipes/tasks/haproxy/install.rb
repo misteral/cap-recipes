@@ -61,7 +61,7 @@ Capistrano::Configuration.instance(true).load do
           god.cmd "#{t} haproxy" unless haproxy_suppress_runner
         end
       end
-      before "god:restart", "haproxy:setup_god"
+      after "god:setup", "haproxy:setup_god"
     end
 
     desc "setup god to watch haproxy"
