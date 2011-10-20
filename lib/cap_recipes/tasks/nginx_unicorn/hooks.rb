@@ -5,7 +5,7 @@ Capistrano::Configuration.instance(true).load do
   after "deploy:setup", "nginx_unicorn:setup"
   after "logrotate:rotate", "nginx_unicorn:reopen"
   after "sdagent:setup", "nginx_unicorn:setup_sdagent"
-  on :load, "nginx_unicorn:runner"
+  on :load, "nginx_unicorn:watcher"
   
   before "nginx_unicorn:restart" do
     #if this runs too early it interferes with a new checkout of the app
