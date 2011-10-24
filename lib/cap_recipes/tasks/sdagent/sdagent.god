@@ -5,6 +5,7 @@ God.watch do |w|
   # sd-agent doesn't appear to do a good job of ensuring only ONE of itself is started
   # added a pkill to ensure old ones that it's lost track of get killed before starting a new one.
   w.start = "/etc/init.d/sd-agent start"
+  # sd-agent was failing to stop the old runners, this helps ensure a clean start
   w.stop = "pkill -f sd-agent"
   #w.restart = "/etc/init.d/sd-agent restart"
   w.pid_file = "/var/run/sd-agent/sd-agent.pid"
