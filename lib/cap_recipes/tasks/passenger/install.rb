@@ -7,7 +7,7 @@ Capistrano::Configuration.instance(true).load do
 
   namespace :passenger do
     desc "Installs Phusion Passenger"
-    task :install, :roles => :web do
+    task :install, :roles => :app do
       puts 'Installing passenger module'
       enable_apache_module
       update_config
@@ -20,13 +20,13 @@ Capistrano::Configuration.instance(true).load do
     before "passenger:install", "passenger:install_build_essential"
 
     desc "Setup Passenger Module"
-    task :enable_apache_module, :roles => :web do
+    task :enable_apache_module, :roles => :app do
       sudo "#{base_ruby_path}/bin/gem install passenger --no-ri --no-rdoc"
       sudo "#{base_ruby_path}/bin/passenger-install-apache2-module --auto"
     end
 
     desc "Configure Passenger"
-    task :update_config, :roles => :web do
+    task :update_config, :roles => :app do
       version = 'ERROR' # default
 
       # passenger (2.X.X, 1.X.X)
@@ -50,7 +50,7 @@ Capistrano::Configuration.instance(true).load do
     # if you want to add more options, try this, in your own conifg
     # read this first... http://www.modrails.com/documentation/Users%20guide.html
     #    namespace :passenger do
-    #      task :add_custom_configuration, :roles=>:web do
+    #      task :add_custom_configuration, :roles=>:app do
     #        #512 - 100(stack) - 4*100(instance)
     #        passenger_config = <<EOF
     #    PassengerMaxPoolSize 4

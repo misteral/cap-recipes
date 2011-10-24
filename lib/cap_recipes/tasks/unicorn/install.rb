@@ -12,10 +12,10 @@ Capistrano::Configuration.instance(true).load do
     set :unicorn_backlog, 2048
     set :unicorn_tries, -1
     set :unicorn_timeout, 30
+    set(:unicorn_root) { current_path }
     set :unicorn_watcher, nil
     set :unicorn_suppress_runner, false
-    set(:unicorn_root) {"#{deploy_to}/current"}
-    
+
     desc "select watcher"
     task :watcher do
       unicorn.send("watch_with_#{unicorn_watcher}".to_sym) unless unicorn_watcher.nil?
@@ -34,16 +34,16 @@ Capistrano::Configuration.instance(true).load do
       after "god:setup", "unicorn:setup_god"
     end
 
+    desc "setup god to watch unicorn"
+    task :setup_god, :roles => :app do
+      god.upload unicorn_god_path, 'unicorn.god'
+    end
+
     desc 'Installs unicorn'
     task :install, :roles => :app do
       utilities.gem_install_only "unicorn", unicorn_version
     end
 
-    desc "setup god to watch unicorn"
-    task :setup_god, :roles => :app do
-      god.upload unicorn_god_path, 'unicorn.god'
-    end
-    
     task :configure, :roles => :app do
       utilities.upload_template unicorn_template_path, "#{latest_release}/config/unicorn.rb"
     end
