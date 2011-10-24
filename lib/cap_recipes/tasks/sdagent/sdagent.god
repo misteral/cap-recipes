@@ -4,9 +4,9 @@ God.watch do |w|
   w.interval = 30.seconds # default
   # sd-agent doesn't appear to do a good job of ensuring only ONE of itself is started
   # added a pkill to ensure old ones that it's lost track of get killed before starting a new one.
-  w.start = "pkill -f sd-agent; /etc/init.d/sd-agent start"
-  w.stop = "/etc/init.d/sd-agent stop"
-  w.restart = "/etc/init.d/sd-agent restart"
+  w.start = "/etc/init.d/sd-agent start"
+  w.stop = "pkill -f sd-agent"
+  #w.restart = "/etc/init.d/sd-agent restart"
   w.pid_file = "/var/run/sd-agent/sd-agent.pid"
 
   FileUtils.mkdir_p File.dirname(w.pid_file)

@@ -37,13 +37,15 @@ case "$1" in
     ;;
   stop)
     echo -n "Stopping $DESC: "
-    kill `cat $PID`
+    pkill -9 -f $DAEMON
     RETVAL=$?
     echo "$NAME."
     ;;
   restart)
     echo -n "Restarting $DESC: "
-    sh -c "kill `cat $PID`;true"
+    set +e
+    pkill -9 -f $DAEMON
+    set -e
     $DAEMON -c $GOD_CONFIG -P $PID -l $LOG
     RETVAL=$?
     sleep 2
