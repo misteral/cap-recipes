@@ -60,7 +60,8 @@ Capistrano::Configuration.instance(true).load do
 
     desc "install riak"
     task :install, :roles => :riak do
-      utilities.apt_install %w[build-essential libc6-dev wget]
+      #http://lists.basho.com/pipermail/riak-users_lists.basho.com/2010-February/000438.html
+      utilities.apt_install %w[build-essential libc6-dev wget libc6-dev-i386 libstdc++6-4.6-dev]
       set :erlang_ver, riak_erlang_ver
       #Erlang is a dependency for anything running riak need to add them to the erlang role.
       roles[:erlang].push(*roles[:riak].to_ary)
