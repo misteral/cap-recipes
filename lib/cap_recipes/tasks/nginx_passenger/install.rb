@@ -23,6 +23,8 @@ Capistrano::Configuration.instance(true).load do
     set(:nginx_passenger_runner_group) { user }
     set :nginx_passenger_watcher, nil
     set :nginx_passenger_suppress_runner, false
+    set :nginx_passenger_max_pool_size, 10
+    set :nginx_passenger_stub_conf_path, File.join(File.dirname(__FILE__),'stub_status.conf')
 
     desc "select watcher"
     task :watcher do
@@ -58,6 +60,8 @@ Capistrano::Configuration.instance(true).load do
 
     task :setup, :roles => :app do
       sudo "mkdir -p #{nginx_passenger_root}/conf/sites-available #{nginx_passenger_root}/conf/sites-enabled"
+      utilities.sudo_upload_template nginx_passenger_stub_conf_path,"#{nginx_passenger_root}/conf/sites-available/stub_status.conf"
+      sudo "ln -sf #{nginx_passenger_root}/conf/sites-available/stub_status.conf #{nginx_passenger_root}/conf/sites-enabled/stub_status.conf"
       utilities.sudo_upload_template nginx_passenger_conf_path, "#{nginx_passenger_root}/conf/nginx.conf"
       utilities.sudo_upload_template nginx_passenger_init_d_path,"/etc/init.d/#{nginx_passenger_init_d}", :mode => "u+x"
     end
