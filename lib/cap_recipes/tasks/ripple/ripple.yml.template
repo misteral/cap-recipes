@@ -7,14 +7,15 @@
 # The test environment has additional keys for configuring the
 # Riak::TestServer for your test/spec suite:
 #
-# * bin_dir specifies the path to the "riak" script that you use to
+# * source specifies the path to the "riak" script that you use to
 #           start Riak (just the directory)
 # * js_source_dir specifies where your custom Javascript functions for
 #           MapReduce should be loaded from. Usually app/mapreduce.
+# The test server copies the source and creates a new structure under tmp
 test:
   http_port: 9000
   pb_port: 9002
   host: <%=ripple_host%>
-  bin_dir: /usr/local/bin   # Default for Homebrew.
+  source: <%="#{riak_root}/bin"%>
   js_source_dir: <%%= Rails.root + "spec/map_reduce" %>
 
