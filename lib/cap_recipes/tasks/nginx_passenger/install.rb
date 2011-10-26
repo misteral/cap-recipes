@@ -9,7 +9,12 @@ Capistrano::Configuration.instance(true).load do
   namespace :nginx_passenger do
 
     set :nginx_passenger_ver, '3.0.9'
+    set :nginx_passenger_nginx_src, "http://nginx.org/download/nginx-1.0.6.tar.gz"
+    set(:nginx_passenger_nginx_ver) { nginx_passenger_nginx_src.match(/\/([^\/]*)\.tar\.gz$/)[1] }
     set :nginx_passenger_root, '/opt/nginx_passenger'
+    set(:nginx_passenger_nginx_source_dir) {"#{nginx_passenger_root}/src/#{nginx_passenger_nginx_ver}"}
+    set(:nginx_passenger_nginx_patch_dir) {"#{nginx_passenger_root}/src"}
+    set :nginx_passenger_log_dir, "/var/log/nginx_passenger"
     set(:nginx_passenger_bin) {"#{nginx_passenger_root}/sbin/nginx"}
     set :nginx_passenger_pid, "/var/run/nginx_passenger.pid"
     set :nginx_passenger_conf_path, File.join(File.dirname(__FILE__),'nginx.conf')
@@ -23,8 +28,8 @@ Capistrano::Configuration.instance(true).load do
     set(:nginx_passenger_runner_group) { user }
     set :nginx_passenger_watcher, nil
     set :nginx_passenger_suppress_runner, false
-    set :nginx_passenger_max_pool_size, 10
     set :nginx_passenger_stub_conf_path, File.join(File.dirname(__FILE__),'stub_status.conf')
+    set(:nginx_passenger_extra_configure_flags) { "--with-http_gzip_static_module --with-http_stub_status_module --add-module=#{nginx_passenger_nginx_patch_dir}/nginx_syslog_patch" }
 
     desc "select watcher"
     task :watcher do
@@ -53,8 +58,12 @@ Capistrano::Configuration.instance(true).load do
     task :install, :roles => :app do
       puts 'Installing Nginx_Passenger'
       utilities.apt_install "libssl-dev zlib1g-dev libcurl4-openssl-dev"
+      sudo "mkdir -p #{nginx_passenger_nginx_source_dir} #{nginx_passenger_log_dir}"
+      run "cd #{nginx_passenger_root}/src && #{sudo} wget --tries=2 -c --progress=bar:force #{nginx_passenger_nginx_src} && #{sudo} tar zxvf #{nginx_passenger_nginx_ver}.tar.gz"
+      utilities.git_clone_or_pull "git://github.com/yaoweibin/nginx_syslog_patch.git", "#{nginx_passenger_nginx_patch_dir}/nginx_syslog_patch"
+      run "cd #{nginx_passenger_nginx_source_dir} && #{sudo} sh -c 'patch -p1 < #{nginx_passenger_nginx_patch_dir}/nginx_syslog_patch/syslog_#{nginx_passenger_nginx_ver.split('-').last}.patch'"
       utilities.gem_install "passenger", nginx_passenger_ver
-      sudo "#{base_ruby_path}/bin/passenger-install-nginx-module --auto --auto-download --prefix=#{nginx_passenger_root}"
+      sudo "#{base_ruby_path}/bin/passenger-install-nginx-module --auto --prefix=#{nginx_passenger_root} --nginx-source-dir=#{nginx_passenger_nginx_source_dir} --extra-configure-flags='#{nginx_passenger_extra_configure_flags}'"
       setup
     end
 
@@ -80,6 +89,11 @@ Capistrano::Configuration.instance(true).load do
     desc "Disable the application conf"
     task :disable, :roles => :app do
       sudo "rm #{nginx_passenger_root}/conf/sites-enabled/#{application}.conf"
+    end
+    
+    desc "Nginx Passenger Reopen"
+    task :reopen, :roles => :app do
+      sudo "#{nginx_passenger_root}/sbin/nginx -s reopen;true"
     end
 
     %w(start stop restart).each do |t|
