@@ -5,16 +5,6 @@ Capistrano::Configuration.instance(true).load do
   after "deploy:setup", "nginx_unicorn:setup"
   after "logrotate:rotate", "nginx_unicorn:reopen"
   after "sdagent:setup", "nginx_unicorn:setup_sdagent"
+  after "nginx_unicorn:install", "nginx_unicorn:setup", "nginx_unicorn:configure"
   on :load, "nginx_unicorn:watcher"
-  
-  before "nginx_unicorn:restart" do
-    #if this runs too early it interferes with a new checkout of the app
-    nginx_unicorn.ensure_system_log_location
-  end
-
-  after "nginx_unicorn:setup" do
-    nginx_unicorn.remove_default
-    nginx_unicorn.configure
-    nginx_unicorn.restart
-  end
 end

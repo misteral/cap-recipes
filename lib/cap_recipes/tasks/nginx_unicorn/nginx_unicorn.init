@@ -11,9 +11,11 @@
 ### END INIT INFO
 
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
-DAEMON=/usr/sbin/nginx
-NAME=nginx
-DESC=nginx
+DAEMON=<%=nginx_unicorn_root%>/sbin/nginx
+DAEMON_OPTS="-c <%=nginx_unicorn_root%>/conf/nginx.conf"
+NAME=<%=nginx_unicorn_init_d%>
+DESC=<%=nginx_unicorn_init_d%>
+PID=<%=nginx_unicorn_pid_file%>
 
 test -x $DAEMON || exit 0
 
@@ -38,33 +40,38 @@ test_nginx_config() {
 
 case "$1" in
   start)
-  echo -n "Starting $DESC: "
+        echo -n "Starting $DESC: "
         test_nginx_config
-  start-stop-daemon --start --quiet --pidfile /var/run/$NAME.pid \
-    --exec $DAEMON -- $DAEMON_OPTS || true
-  echo "$NAME."
-  ;;
+        start-stop-daemon --start --quiet --pidfile $PID \
+          --exec $DAEMON -- $DAEMON_OPTS || true
+        echo "$NAME."
+        ;;
   stop)
-  echo -n "Stopping $DESC: "
-  start-stop-daemon --stop --quiet --pidfile /var/run/$NAME.pid \
-    --exec $DAEMON || true
-  echo "$NAME."
-  ;;
+        echo -n "Stopping $DESC: "
+        start-stop-daemon --stop --quiet --pidfile $PID \
+          --exec $DAEMON || true
+        echo "$NAME."
+        ;;
   restart|force-reload)
-  echo -n "Restarting $DESC: "
-  start-stop-daemon --stop --quiet --pidfile \
-    /var/run/$NAME.pid --exec $DAEMON || true
-  sleep 1
+        echo -n "Restarting $DESC: "
+        start-stop-daemon --stop --quiet --pidfile \
+          $PID --exec $DAEMON || true
+        sleep 1
         test_nginx_config
-  start-stop-daemon --start --quiet --pidfile \
-    /var/run/$NAME.pid --exec $DAEMON -- $DAEMON_OPTS || true
-  echo "$NAME."
-  ;;
+        start-stop-daemon --start --quiet --pidfile \
+          $PID --exec $DAEMON -- $DAEMON_OPTS || true
+        echo "$NAME."
+        ;;
   reload)
         echo -n "Reloading $DESC configuration: "
         test_nginx_config
-        start-stop-daemon --stop --signal HUP --quiet --pidfile /var/run/$NAME.pid \
+        start-stop-daemon --stop --signal HUP --quiet --pidfile $PID \
             --exec $DAEMON || true
+        echo "$NAME."
+        ;;
+  reopen)
+        echo -n "Reopening $DESC log files: "
+        $DAEMON -s reopen || true
         echo "$NAME."
         ;;
   configtest)
@@ -77,10 +84,10 @@ case "$1" in
         fi
         ;;
   status)
-  status_of_proc -p /var/run/$NAME.pid "$DAEMON" nginx && exit 0 || exit $?
+  status_of_proc -p $PID "$DAEMON" nginx && exit 0 || exit $?
   ;;
   *)
-  echo "Usage: $NAME {start|stop|restart|reload|force-reload|status|configtest}" >&2
+  echo "Usage: $NAME {start|stop|restart|reload|force-reload|reopen|status|configtest}" >&2
   exit 1
   ;;
 esac

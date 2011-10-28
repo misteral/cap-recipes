@@ -1,45 +1,184 @@
+# Sample verbose configuration file for Unicorn (not Rack)
+#
+# This configuration file documents many features of Unicorn
+# that may not be needed for some applications. See
+# http://unicorn.bogomips.org/examples/unicorn.conf.minimal.rb
+# for a much simpler configuration file.
+#
+# See http://unicorn.bogomips.org/Unicorn/Configurator.html for complete
+# documentation.
 
-#http://sleekd.com/general/configuring-nginx-and-unicorn/
-#http://www.rubyrescue.com/blog/2010/06/23/migrating-rails-to-unicorn-from-phusion-passenger/
+# Redirect Log to Syslog
+# https://gist.github.com/531749
+class Syslogger
+  def initialize
+    read, @write = IO.pipe
+    fork do
+      @write.close
+      $stdin.reopen read
+      exec *%w(logger -trails)
+    end
+    read.close
+    @write.sync = true
+  end
+  def write(progname=nil, &block)
+    @write.puts "#{progname} #{block.call if block_given?}"
+  end
+  alias :debug :write
+  alias :info :write
+  alias :warn :write
+  alias :error :write
+  alias :fatal :write
+end
+logger Syslogger.new
 
-# http://www.rubyenterpriseedition.com/faq.html#adapt_apps_for_cow
-if GC.respond_to?(:copy_on_write_friendly=)
-  GC.copy_on_write_friendly = true
+# unicorn will stash its original command-line at startup for the USR2 upgrades, and cleaning up old revisions will cause revision-specific installations of unicorn to go missing and upgrades to fail. If you find yourself in this situation and can’t afford downtime, you can override the existing unicorn executable path in the config file like this:
+# Then use HUP to reload, and then continue with the USR2+QUIT upgrade sequence.
+Unicorn::HttpServer::START_CTX[0] = "<%=current_path%>/bin/unicorn"
+
+# Use at least one worker per core if you're on a dedicated server,
+# more will usually help for _short_ waits on databases/caches.
+
+worker_processes(( workers = ENV['UNICORN_WORKERS'].to_i ) > 0 ? workers : 4)
+
+# Help ensure your application will always spawn in the symlinked
+# "current" directory that Capistrano sets up.
+# working_directory "/path/to/app/current" # available in 0.94.0+
+
+# listen on both a Unix domain socket and a TCP port,
+# we use a shorter backlog for quicker failover when busy
+# listen "/tmp/.sock", :backlog => 64
+# listen 3000, :tcp_nopush => true
+
+if File.exists?( shared_socket = File.expand_path('../../../shared/sockets', __FILE__) )
+  listen shared_socket + '/unicorn.sock', :backlog => 2048, :tries => -1
+else
+  listen "<%=unicorn_backup_socket_location%>", :backlog => 2048, :tries => -1
 end
 
-workdir = File.expand_path(File.dirname(__FILE__)+ '/..')
-worker_processes <%=unicorn_workers%>
-working_directory workdir
+# nuke workers after 30 seconds instead of 60 seconds (the default)
+# if Rails.env.admin?
+  timeout 120
+# else
+# timeout 60
+# end
 
-# This loads the application in the master process before forking
-# worker processes
-# Read more about it here:
-# http://unicorn.bogomips.org/Unicorn/Configurator.html
+
+# feel free to point this anywhere accessible on the filesystem
+# pid "/path/to/app/shared/pids/unicorn.pid"
+pid File.expand_path('../../tmp/pids/unicorn.pid', __FILE__)
+
+# By default, the Unicorn logger will write to stderr.
+# Additionally, ome applications/frameworks log to stderr or stdout,
+# so prevent them from going to /dev/null when daemonized here:
+# stderr_path "/path/to/app/shared/log/unicorn.stderr.log"
+# stdout_path "/path/to/app/shared/log/unicorn.stdout.log"
+stderr_path File.expand_path('../../log/unicorn.log', __FILE__)
+stdout_path File.expand_path('../../log/unicorn.log', __FILE__)
+
+# combine REE with "preload_app true" for memory savings
+# http://rubyenterpriseedition.com/faq.html#adapt_apps_for_cow
 preload_app true
+GC.respond_to?(:copy_on_write_friendly=) and
+  GC.copy_on_write_friendly = true
+  
+# sets the working directory for Unicorn.  This ensures SIGUSR2 will
+# start a new instance of Unicorn in this directory.  This may be
+# a symlink, a common scenario for Capistrano users.  Unlike
+# all other Unicorn configuration directives, this binds immediately
+# for error checking and cannot be undone by unsetting it in the
+# configuration file and reloading.
+working_directory "<%=current_path%>"
 
-timeout <%=unicorn_timeout%>
-
-# This is where we specify the socket.
-# We will point the upstream Nginx module to this socket later on
-listen "#{workdir}/tmp/sockets/unicorn.sock", :backlog => 64
-
-pid "#{workdir}/tmp/pids/unicorn.pid"
-
-# Set the path of the log files inside the log folder of the testapp
-stderr_path "#{workdir}/log/unicorn.stderr.log"
-stdout_path "#{workdir}/log/unicorn.stdout.log"
-
-before_fork do |server, worker|
-# This option works in together with preload_app true setting
-# What is does is prevent the master process from holding
-# the database connection
-  defined?(ActiveRecord::Base) and
-    ActiveRecord::Base.connection.disconnect!
+# sets the before_exec hook to a given Proc object.  This
+# Proc object will be called by the master process right
+# before exec()-ing the new unicorn binary.  This is useful
+# for freeing certain OS resources that you do NOT wish to
+# share with the reexeced child process.
+# There is no corresponding after_exec hook (for obvious reasons).
+before_exec do |server|
+  ENV.each do |key,value|
+    server.logger.warn "EXEC ENV['#{key}']=#{value}" if %w(BUNDLE_BIN_PATH GEM_PATH GEM_HOME RACK_ENV PATH BUNDLE_GEMFILE USER PWD).include?(key)
+  end
+  ENV["BUNDLE_GEMFILE"] = "<%=current_path%>/Gemfile"
 end
 
+
+# sets before_fork got be a given Proc object.  This Proc
+# object will be called by the master process before forking
+# each worker.
+# before_fork do |server, worker|
+#   ENV.each do |key,value|
+#     server.logger.info "BEFORE ENV['#{key}']=#{value}" if %w(BUNDLE_BIN_PATH GEM_PATH GEM_HOME RACK_ENV PATH BUNDLE_GEMFILE USER PWD).include?(key)
+#   end
+#   # the following is highly recomended for Rails + "preload_app true"
+#   # as there's no need for the master process to hold a connection
+#   # defined?(ActiveRecord::Base) and
+#   # ActiveRecord::Base.connection.disconnect!
+# 
+#   # defined?(DB) and DB.disconnect
+#   # defined?(SDB) and SDB.disconnect
+#   #
+#   # # *optionally* throttle the master from forking too quickly by sleeping
+#   # sleep 1
+# end
+
+# sets after_fork hook to a given block.  This block will be called by
+# the worker after forking.  The following is an example hook which adds
+# a per-process listener to every worker:
+#
+#  after_fork do |server,worker|
+#    # per-process listener ports for debugging/admin:
+#    addr = "127.0.0.1:#{9293 + worker.nr}"
+#    # the negative :tries parameter indicates we will retry forever
+#    # waiting on the existing process to exit with a 5 second :delay
+#    # Existing options for Unicorn::Configurator#listen such as
+#    # :backlog, :rcvbuf, :sndbuf are available here as well.
+#    server.listen(addr, :tries => -1, :delay => 5, :backlog => 128)
+#  end
 after_fork do |server, worker|
-# Here we are establishing the connection after forking worker
-# processes
+  ENV.each do |key,value|
+    server.logger.info "AFTER ENV['#{key}']=#{value}" if %w(BUNDLE_BIN_PATH GEM_PATH GEM_HOME RACK_ENV PATH BUNDLE_GEMFILE PWD).include?(key)
+  end
+  # per-process listener ports for debugging/admin/migrations
+  # addr = "127.0.0.1:#{9293 + worker.nr}"
+  # server.listen(addr, :tries => -1, :delay => 5, :tcp_nopush => true)
+
+  # the following is *required* for Rails + "preload_app true",
   defined?(ActiveRecord::Base) and
-    ActiveRecord::Base.establish_connection
+  ActiveRecord::Base.establish_connection
+
+  # if preload_app is true, then you may also want to check and
+  # restart any other shared sockets/descriptors such as Memcached,
+  # and Redis. TokyoCabinet file handles are safe to reuse
+  # between any number of forked children (assuming your kernel
+  # correctly implements pread()/pwrite() system calls)
+  # connect to the db configured for the current Rails.env
+  
+  ##
+  # When sent a USR2, Unicorn will suffix its pidfile with .oldbin and
+  # immediately start loading up a new version of itself (loaded with a new
+  # version of our app). When this new Unicorn is completely loaded
+  # it will begin spawning workers. The first worker spawned will check to
+  # see if an .oldbin pidfile exists. If so, this means we've just booted up
+  # a new Unicorn and need to tell the old one that it can now die. To do so
+  # we send it a QUIT.
+  #
+  # Using this method we get 0 downtime deploys.
+
+  # wait until last worker boots to send QUIT signal
+  next if worker.nr != (server.worker_processes - 1)
+  
+  old_pid = File.expand_path('../../tmp/pids/unicorn.pid.oldbin', __FILE__)
+  if File.exists?(old_pid) && server.pid != old_pid
+    begin
+      Process.kill("QUIT", old_pid_number = File.read(old_pid).to_i)
+      puts "I stabbed the Unicorn! with PID #{old_pid_number}"
+    rescue
+      puts "Darn, PID #{old_pid_number} was already dead."
+    end
+  end
+  
 end
+
+

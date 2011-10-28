@@ -47,6 +47,13 @@ Capistrano::Configuration.instance(true).load do
       sudo "mkdir -p /var/run/sd-agent"
       sudo "chown sd-agent:sd-agent /var/run/sd-agent"
       god.upload sdagent_god_path, 'sdagent.god'
+      # disable init from automatically starting and stopping these init controlled apps
+      # god will be started by init, and in turn start these god controlled apps.
+      # but leave the init script in place to be called manually
+      sudo "update-rc.d -f sd-agent remove; true"
+      #if you simply remove lsb driven links an apt-get can later reinstall them
+      #so we explicitly define the kill scripts.
+      sudo "update-rc.d sd-agent stop 20 2 3 4 5 .; true"
     end
     
     task :update, :roles => :sdagent do

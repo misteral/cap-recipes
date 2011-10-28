@@ -29,7 +29,6 @@ Capistrano::Configuration.instance(true).load do
     set :nginx_passenger_watcher, nil
     set :nginx_passenger_suppress_runner, false
     set :nginx_passenger_stub_conf_path, File.join(File.dirname(__FILE__),'stub_status.conf')
-    set(:nginx_passenger_extra_configure_flags) { "--with-http_gzip_static_module --with-http_stub_status_module --add-module=#{nginx_passenger_nginx_patch_dir}/nginx_syslog_patch" }
 
     desc "select watcher"
     task :watcher do
@@ -52,6 +51,13 @@ Capistrano::Configuration.instance(true).load do
     desc "setup god to watch unicorn"
     task :setup_god, :roles => :app do
       god.upload nginx_passenger_god_path, 'nginx_passenger.god'
+      # disable init from automatically starting and stopping these init controlled apps
+      # god will be started by init, and in turn start these god controlled apps.
+      # but leave the init script in place to be called manually
+      sudo "update-rc.d -f nginx_passenger remove; true"
+      #if you simply remove lsb driven links an apt-get can later reinstall them
+      #so we explicitly define the kill scripts.
+      sudo "update-rc.d nginx_passenger stop 20 2 3 4 5 .; true"
     end
 
     desc 'Installs nginx_passenger'
