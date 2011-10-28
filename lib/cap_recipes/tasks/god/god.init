@@ -16,6 +16,7 @@ GOD_CONFIG=<%=god_config%>
 PATH="<%="#{base_ruby_path}/bin"%>:/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin"
 LOG=<%=god_log_path%>
 PID=<%=god_pid_path%>
+LEVEL=<%=god_log_level%>
 
 set -e
 
@@ -29,7 +30,7 @@ RETVAL=0
 case "$1" in
   start)
     echo -n "Starting $DESC: "
-    $DAEMON -c $GOD_CONFIG -P $PID -l $LOG
+    $DAEMON -c $GOD_CONFIG -P $PID --log-level $LEVEL <%= god_log_path ? '--log $LOG' : '' %>
     RETVAL=$?
     sleep 2
     sh -c "chmod 0777 /tmp/god.*.sock;true"
@@ -46,7 +47,7 @@ case "$1" in
     set +e
     pkill -9 -f $DAEMON
     set -e
-    $DAEMON -c $GOD_CONFIG -P $PID -l $LOG
+    $DAEMON -c $GOD_CONFIG -P $PID --log-level $LEVEL <%= god_log_path ? '--log $LOG' : '' %>
     RETVAL=$?
     sleep 2
     sh -c "chmod 0777 /tmp/god.*.sock;true"

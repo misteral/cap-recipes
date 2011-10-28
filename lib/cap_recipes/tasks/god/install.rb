@@ -9,12 +9,13 @@ Capistrano::Configuration.instance(true).load do
     set(:god_init) {"/etc/init.d/god"}
     set :god_init_path, File.join(File.dirname(__FILE__),'god.init')
     set :god_contacts_path, File.join(File.dirname(__FILE__),'contacts.god')
-    set(:god_log_path) {"/var/log/god.log"}
+    set :god_log_path, nil # without a path assumes syslog
     set(:god_pid_path) {"/var/run/god.pid"}
     set :god_notify_list, "localhost"
     set :god_install_from, :package
     set :god_git_ref, "v0.11.0"
     set :god_git_repo, "git://github.com/mojombo/god.git"
+    set :god_log_level, "info" # [debug|info|warn|error|fatal]
 
     def cmd(cmd,options={})
       r_env = options[:rails_env] || rails_env
