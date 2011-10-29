@@ -107,21 +107,21 @@ end
 # sets before_fork got be a given Proc object.  This Proc
 # object will be called by the master process before forking
 # each worker.
-# before_fork do |server, worker|
-#   ENV.each do |key,value|
-#     server.logger.info "BEFORE ENV['#{key}']=#{value}" if %w(BUNDLE_BIN_PATH GEM_PATH GEM_HOME RACK_ENV PATH BUNDLE_GEMFILE USER PWD).include?(key)
-#   end
-#   # the following is highly recomended for Rails + "preload_app true"
-#   # as there's no need for the master process to hold a connection
-#   # defined?(ActiveRecord::Base) and
-#   # ActiveRecord::Base.connection.disconnect!
-# 
-#   # defined?(DB) and DB.disconnect
-#   # defined?(SDB) and SDB.disconnect
-#   #
-#   # # *optionally* throttle the master from forking too quickly by sleeping
-#   # sleep 1
-# end
+before_fork do |server, worker|
+  # the following is highly recomended for Rails + "preload_app true"
+  # as there's no need for the master process to hold a connection
+  defined?(ActiveRecord::Base) and ActiveRecord::Base.connection.disconnect!
+  
+  # Sequel contstants
+  defined?(DB) and DB.disconnect
+  defined?(SDB) and SDB.disconnect
+  
+  # Riak connection via Ripple
+  Thread.current[:ripple_clent] = nil if Thread.current[:ripple_client]
+  #
+  # # *optionally* throttle the master from forking too quickly by sleeping
+  # sleep 1
+end
 
 # sets after_fork hook to a given block.  This block will be called by
 # the worker after forking.  The following is an example hook which adds
@@ -140,21 +140,7 @@ after_fork do |server, worker|
   ENV.each do |key,value|
     server.logger.info "AFTER ENV['#{key}']=#{value}" if %w(BUNDLE_BIN_PATH GEM_PATH GEM_HOME RACK_ENV PATH BUNDLE_GEMFILE PWD).include?(key)
   end
-  # per-process listener ports for debugging/admin/migrations
-  # addr = "127.0.0.1:#{9293 + worker.nr}"
-  # server.listen(addr, :tries => -1, :delay => 5, :tcp_nopush => true)
 
-  # the following is *required* for Rails + "preload_app true",
-  defined?(ActiveRecord::Base) and
-  ActiveRecord::Base.establish_connection
-
-  # if preload_app is true, then you may also want to check and
-  # restart any other shared sockets/descriptors such as Memcached,
-  # and Redis. TokyoCabinet file handles are safe to reuse
-  # between any number of forked children (assuming your kernel
-  # correctly implements pread()/pwrite() system calls)
-  # connect to the db configured for the current Rails.env
-  
   ##
   # When sent a USR2, Unicorn will suffix its pidfile with .oldbin and
   # immediately start loading up a new version of itself (loaded with a new
