@@ -20,8 +20,7 @@ Capistrano::Configuration.instance(true).load do
         deb http://www.serverdensity.com/downloads/linux/debian lenny main
       },'/tmp/serverdensity.list'
       sudo "mv /tmp/serverdensity.list /etc/apt/sources.list.d/serverdensity.list"
-      utilities.apt_update
-      utilities.apt_install "sd-agent python-mysqldb python-dev"
+      sdagent.update
       sdagent.setup
       sdagent.restart unless sdagent_watcher == :god
     end
@@ -55,12 +54,12 @@ Capistrano::Configuration.instance(true).load do
       #so we explicitly define the kill scripts.
       sudo "update-rc.d sd-agent stop 20 2 3 4 5 .; true"
     end
-    
+
     task :update, :roles => :sdagent do
       utilities.apt_update
-      utilities.apt_install "sd-agent"
+      utilities.sudo_with_input "DEBCONF_TERSE='yes' DEBIAN_PRIORITY='critical' DEBIAN_FRONTEND=noninteractive apt-get -qyu --force-yes install sd-agent python-mysqldb python-dev", /\?\w*/, "N\n"
     end
-    
+
     task :setup, :roles => :sdagent do
       sudo "mkdir -p #{sdagent_plugins_dir}"
     end
