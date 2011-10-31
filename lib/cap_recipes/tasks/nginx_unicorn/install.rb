@@ -30,6 +30,7 @@ Capistrano::Configuration.instance(true).load do
     set(:nginx_unicorn_log_dir) {"#{nginx_unicorn_root}/logs"}
     set(:nginx_unicorn_pid_file) {"#{nginx_unicorn_log_dir}/nginx.pid"}
     set :nginx_unicorn_watcher, nil
+    set :nginx_unicorn_user, "nobody"
     set :nginx_unicorn_suppress_runner, false
     set :nginx_unicorn_port, '80'
     set :nginx_unicorn_server_name, 'localhost'
