@@ -56,8 +56,13 @@ Capistrano::Configuration.instance(true).load do
     end
 
     task :update, :roles => :sdagent do
+      # recover from a botched sd-agent update
+      begin; sudo "pkill -f apt-get"; rescue; end
+      begin; sudo "pkill -f dpkg"; rescue; end
+      utilities.sudo_with_input "dpkg --configure -a", /default=N/, "\n"
+      # end recover
       utilities.apt_update
-      utilities.sudo_with_input "DEBCONF_TERSE='yes' DEBIAN_PRIORITY='critical' DEBIAN_FRONTEND=noninteractive apt-get -qyu --force-yes install sd-agent python-mysqldb python-dev", /\?\w*/, "N\n"
+      utilities.sudo_with_input "DEBCONF_TERSE='yes' DEBIAN_PRIORITY='critical' DEBIAN_FRONTEND=noninteractive apt-get -qyu --force-yes install sd-agent python-mysqldb python-dev", /default=N/, "\n"
     end
 
     task :setup, :roles => :sdagent do
