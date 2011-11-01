@@ -34,7 +34,7 @@ Capistrano::Configuration.instance(true).load do
     task :watch_with_god do
       #rejigger the maintenance tasks to use god when god is in play
       %w(start stop restart).each do |t|
-        task t.to_sym, :roles => :app do
+        task t.to_sym, :roles => :sdagent do
           god.cmd "#{t} sdagent" unless sdagent_suppress_runner
         end
       end
