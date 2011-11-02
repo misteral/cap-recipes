@@ -81,8 +81,9 @@ module Utilities
   end
 
   def apt_upgrade
+    sudo_with_input "dpkg --configure -a", /\?/, "\n" #recover from failed dpkg
     sudo "#{apt_get} -qy update"
-    sudo "#{apt_get} -qyu --force-yes upgrade"
+    sudo_with_input "#{apt_get} -qyu --force-yes upgrade", /\?/, "\n" #answer the default if any package pops up a warning
   end
 
   def apt_get
