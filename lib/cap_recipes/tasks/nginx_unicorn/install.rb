@@ -51,7 +51,7 @@ Capistrano::Configuration.instance(true).load do
       nginx_unicorn.send("watch_with_#{nginx_unicorn_watcher}".to_sym) unless nginx_unicorn_watcher.nil?
     end
 
-    desc "Use GOD as unicorn's runner"
+    desc "Use GOD as nginx_unicorn's runner"
     task :watch_with_god do
       #rejigger the maintenance tasks to use god when god is in play
       %w(start stop restart).each do |t|
@@ -62,7 +62,7 @@ Capistrano::Configuration.instance(true).load do
       after "god:setup", "nginx_unicorn:setup_god"
     end
 
-    desc "setup god to watch unicorn"
+    desc "setup god to watch nginx_unicorn"
     task :setup_god, :roles => :app do
       god.upload nginx_unicorn_god_path, 'nginx_unicorn.god'
     end
