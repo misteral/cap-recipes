@@ -37,6 +37,8 @@ Capistrano::Configuration.instance(true).load do
     set :riak_pb_port, "8087"
     set :riak_name, 'riak'
     set :riak_install_from, :git
+    set :riak_backup_root, "/mnt/backup"
+    set :riak_backup_bucket, "riak-backups"
     set :riak_search, true
     set :riak_ring_creation_size, '512'
     set :riak_backend, "riak_kv_eleveldb_backend" # riak_kv_eleveldb_backend | riak_kv_bitcask_backend
@@ -106,6 +108,22 @@ Capistrano::Configuration.instance(true).load do
     desc "setup god to watch riak"
     task :setup_god, :roles => :riak do
       god.upload(riak_god_path,"riak.god")
+    end
+
+    desc "backup to s3"
+    task :backup_to_s3, :roles => :riak do
+      #https://github.com/basho/riak_wiki/issues/192
+      run "#{sudo} rm -rf #{riak_backup_root}/last; true"
+      run "#{sudo} mv #{riak_backup_root}/current #{riak_backup_root}/last; true"
+      sudo "mkdir -p #{riak_backup_root}/current"
+      sudo "tar -czf #{riak_backup_root}/current/riak_backup.#{Time.now.utc.strftime("%Y-%m-%d-%H-%M-%S")}.`hostname`.tar.gz -C #{riak_root} data etc"
+      sudo "s3cmd mb s3://#{riak_backup_bucket}"
+      sudo "s3cmd put #{riak_backup_root}/current/* s3://#{riak_backup_bucket}/"
+    end
+
+    desc "clear backup location"
+    task :clear_backup_location, :roles => :riak do
+      sudo "rm -rf #{riak_backup_root}"
     end
 
     %w(start stop restart ping force-reload).each do |t|
