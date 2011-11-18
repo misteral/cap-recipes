@@ -117,7 +117,7 @@ Capistrano::Configuration.instance(true).load do
       run "#{sudo} mv #{riak_backup_root}/current #{riak_backup_root}/last; true"
       sudo "mkdir -p #{riak_backup_root}/current"
       sudo "tar -czf #{riak_backup_root}/current/riak_backup.#{Time.now.utc.strftime("%Y-%m-%d-%H-%M-%S")}.`hostname`.tar.gz -C #{riak_root} data etc"
-      sudo "s3cmd mb s3://#{riak_backup_bucket}"
+      sudo "s3cmd mb s3://#{riak_backup_bucket}", :once => true #Avoid the ERROR: S3 error: 409 (OperationAborted): A conflicting conditional operation is ...
       sudo "s3cmd put #{riak_backup_root}/current/* s3://#{riak_backup_bucket}/"
     end
 
