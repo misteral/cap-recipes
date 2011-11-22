@@ -16,6 +16,7 @@ Capistrano::Configuration.instance(true).load do
     task :install, :roles => :newrelic_rpm do
       utilities.gem_install "newrelic_rpm", newrelic_rpm_gem_ver
       utilities.gem_install "rpm_contrib", newrelic_rpm_contrib_gem_ver
+      run "curl -L http://download.newrelic.com/548C16BF.gpg | #{sudo} apt-key add -"
       sudo "curl -L http://download.newrelic.com/debian/newrelic.list -o /etc/apt/sources.list.d/newrelic.list"
       utilities.apt_update
       utilities.apt_install 'newrelic-sysmond'
