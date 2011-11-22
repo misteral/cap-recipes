@@ -122,6 +122,8 @@ module Utilities
     switches += " --system" if options[:system]
     switches += " --shell=#{options[:shell]} " if options[:shell]
     switches += ' --no-create-home ' if options[:nohome]
+    switches += " --uid #{options[:uid]} " if options[:uid]
+    switches += " --gid #{options[:gid]} " if options[:gid]
     switches += " --ingroup #{options[:group]} " unless options[:group].nil?
     invoke_command "grep '^#{user}:' /etc/passwd || sudo /usr/sbin/adduser #{user} #{switches}",
     :via => run_method
@@ -131,6 +133,7 @@ module Utilities
   def addgroup(group,options={})
     switches = ''
     switches += " --system" if options[:system]
+    switches += " --gid #{options[:gid]} " if options[:gid]
     invoke_command "/usr/sbin/addgroup #{group} #{switches}", :via => run_method
   end
 
