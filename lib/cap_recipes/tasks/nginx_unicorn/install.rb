@@ -137,5 +137,12 @@ Capistrano::Configuration.instance(true).load do
       sudo "rm #{nginx_unicorn_root}/conf/sites-enabled/#{application}.conf"
     end
 
+    %w(start stop restart).each do |t|
+      desc "#{t} nginx_unicorn via init"
+      task t.to_sym, :roles => :app do
+        sudo "/etc/init.d/nginx #{t}" unless nginx_unicorn_suppress_runner
+      end
+    end
+
   end
 end
