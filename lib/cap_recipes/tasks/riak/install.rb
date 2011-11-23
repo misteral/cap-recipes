@@ -60,6 +60,7 @@ Capistrano::Configuration.instance(true).load do
         "#{riak_root}/etc"
       end
     }
+    # TODO: riak needs a watcher setup
 
     desc "install riak"
     task :install, :roles => :riak do
@@ -130,7 +131,8 @@ Capistrano::Configuration.instance(true).load do
     %w(start stop restart ping force-reload).each do |t|
       desc "#{t} riak"
       task t.to_sym, :roles => :riak do
-        sudo "/etc/init.d/riak #{t}"
+        #sudo "/etc/init.d/riak #{t}"
+        god.cmd "#{t} riaks"
       end
     end
   end
