@@ -1,5 +1,5 @@
 require File.expand_path(File.dirname(__FILE__) + '/../utilities')
-
+#TODO: incorporate ryslsog config like: http://kevin.vanzonneveld.net/techblog/article/haproxy_logging/
 Capistrano::Configuration.instance(true).load do
   namespace :haproxy do
     roles[:haproxy]

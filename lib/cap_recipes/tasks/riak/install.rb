@@ -42,6 +42,7 @@ Capistrano::Configuration.instance(true).load do
     set :riak_search, true
     set :riak_ring_creation_size, '512'
     set :riak_backend, "riak_kv_eleveldb_backend" # riak_kv_eleveldb_backend | riak_kv_bitcask_backend
+    set(:riak_js_source_dir) {"#{riak_root}/js_source"}
     set(:riak_root) {
       #TODO: not fully plumbed, :package does it's own thing and ignores this, :source SHOULD use it but doesn't yet.
       case riak_install_from
