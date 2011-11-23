@@ -3,7 +3,6 @@
   http_port: 8098
   pb_port: 8087
   host: <%=ripple_host%>
-  js_source_dir: <%%= Rails.root + "app/map_reduce" %>
 
 # The test environment has additional keys for configuring the
 # Riak::TestServer for your test/spec suite:
@@ -16,7 +15,6 @@
 test:
   http_port: 9000
   pb_port: 9002
-  host: <%=ripple_host%>
   source: <%="#{riak_root}/bin"%>
   js_source_dir: <%%= Rails.root + "spec/map_reduce" %>
 
