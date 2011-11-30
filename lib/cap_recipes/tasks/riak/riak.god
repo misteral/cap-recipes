@@ -12,9 +12,9 @@ God.watch do |w|
   w.stop_grace = 10.seconds
   w.stop_timeout = 20.seconds
   w.restart_grace = 10.seconds
-  
+
   w.log = "<%=%Q{#{riak_root}/log}%>/god.log"
-  
+
   w.transition(:init, { true => :up, false => :start }) do |on|
    on.condition(:http_response_code) do |c|
       c.host = '<%=riak_listen%>'
@@ -32,22 +32,14 @@ God.watch do |w|
       c.code_is = 200
       c.notify = %w[ <%=god_notify_list%> ]
     end
-
   end
 
-  # start if process is not running
   w.transition(:up, :restart) do |on|
    on.condition(:http_response_code) do |c|
       c.host = '<%=riak_listen%>'
       c.port = '<%=riak_http_port%>'
       c.path = '/ping'
       c.code_is_not = 200
-      c.notify = %w[ <%=god_notify_list%> ]
-    end
-    # failsafe
-    on.condition(:tries) do |c|
-      c.times = 5
-      c.transition = :start
       c.notify = %w[ <%=god_notify_list%> ]
     end
   end
