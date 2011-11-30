@@ -7,7 +7,7 @@ God.watch do |w|
   w.group = "unicorn"
   w.name = "unicorn_rails"
   w.interval = 10.seconds # 30 default
-  w.env {
+  w.env = {
     'UNICORN_WORKERS' =>  '<%=unicorn_workers%>'
   }
 
