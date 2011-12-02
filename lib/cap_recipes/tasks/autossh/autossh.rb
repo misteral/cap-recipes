@@ -28,7 +28,7 @@ Capistrano::Configuration.instance(true).load do
       }
     end
 
-    desc "Install sudeoers file"
+    desc "Start Autossh"
     task :start, :roles => :autossh do
       utilities.run_compressed %Q{
         #{sudo} /etc/init.d/autossh start
