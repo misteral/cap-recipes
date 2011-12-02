@@ -39,6 +39,12 @@ Capistrano::Configuration.instance(true).load do
         end
       end
       before "god:setup", "sdagent:setup_god"
+      after "sdagent:uninstall", "sdagent:unsetup_god"
+    end
+
+    desc "uninstall sd-agent"
+    task :uninstall, :roles => :sdagent do
+      utilities.sudo_with_input "apt-get remove sd-agent", /\?/,"Y\n"
     end
 
     desc "setup god to watch sdagent"
@@ -53,6 +59,11 @@ Capistrano::Configuration.instance(true).load do
       #if you simply remove lsb driven links an apt-get can later reinstall them
       #so we explicitly define the kill scripts.
       sudo "update-rc.d sd-agent stop 20 2 3 4 5 .; true"
+    end
+
+    task :unsetup_god, :roles => :sdagent do
+      sudo "rm -f #{sdagent_god_path}/sdagent.god"
+      god.restart
     end
 
     task :update, :roles => :sdagent do
