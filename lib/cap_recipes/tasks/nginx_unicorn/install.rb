@@ -112,7 +112,7 @@ Capistrano::Configuration.instance(true).load do
       #so we explicitly define the kill scripts.
       sudo "update-rc.d nginx_unicorn stop 20 2 3 4 5 .; true"
     end
-    
+
     desc "Setup sd-agent to collect metrics for nginx"
     task :setup_sdagent, :roles => :app do
       # block executing this task if :sdagent isn't present on any :app servers.
