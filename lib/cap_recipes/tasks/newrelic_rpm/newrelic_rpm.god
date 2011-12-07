@@ -7,6 +7,10 @@ God.watch do |w|
   w.restart = "/etc/init.d/newrelic-sysmond restart"
   w.pid_file = "/var/run/newrelic/nrsysmond.pid"
 
+  w.start_grace = 30.seconds
+  w.restart_grace = 30.seconds
+  w.stop_grace = 30.seconds
+
   # Make sure the pid directory exists
   FileUtils.mkdir_p File.dirname(w.pid_file)
 
