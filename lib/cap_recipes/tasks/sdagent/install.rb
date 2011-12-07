@@ -62,7 +62,7 @@ Capistrano::Configuration.instance(true).load do
     end
 
     task :unsetup_god, :roles => :sdagent do
-      sudo "rm -f #{sdagent_god_path}/sdagent.god"
+      sudo "rm -f #{god_confd}/sdagent.god"
       god.restart
     end
 

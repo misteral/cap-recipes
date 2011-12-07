@@ -92,7 +92,11 @@ Capistrano::Configuration.instance(true).load do
 
     desc "terminate god and everything it's watching"
     task :terminate, :except => {:no_ruby => true } do
-      god.cmd "terminate"
+      god.cmd "terminate; true"
+      sleep 10
+      sudo "/etc/init.d/god stop;true"
+      sleep 10
+      sudo "pkill -9 -f god;true"
     end
 
   end

@@ -1,6 +1,6 @@
 require 'fileutils'
 
-module Utilities 
+module Utilities
   # utilities.config_gsub('/etc/example', /(.*)/im, "\\1")
   def config_gsub(file, find, replace)
     tmp="/tmp/#{File.basename(file)}"
@@ -59,7 +59,7 @@ module Utilities
     cmd = "#{sudo} #{base_ruby_path}/bin/gem uninstall --ignore-dependencies --executables #{version ? '-v '+version.to_s  : '--all'} #{package}"
     run "if #{base_ruby_path}/bin/gem list '#{package}' | grep --silent -e '#{package}.*#{version}'; then #{cmd}; fi"
   end
-  
+
   # utilities.apt_install %w[package1 package2]
   # utilities.apt_install "package1 package2"
   def apt_install(packages)
@@ -67,7 +67,7 @@ module Utilities
     packages = Array(packages)
     sudo "#{apt_get} -qyu --force-yes install #{packages.join(" ")}"
   end
-  
+
   # utilities.apt_reinstall %w[package1 package2]
   # utilities.apt_reinstall "package1 package2"
   def apt_reinstall(packages)
@@ -204,7 +204,7 @@ module Utilities
   def run_compressed(cmd)
     run cmd.split("\n").reject(&:empty?).map(&:strip).join(' ')
   end
-  
+
   def sudo_run_compressed(cmd)
     sudo %Q{sh -c "#{cmd.split("\n").reject(&:empty?).map(&:strip).join(' ')}"}
   end
