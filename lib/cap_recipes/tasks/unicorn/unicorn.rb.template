@@ -111,11 +111,10 @@ before_fork do |server, worker|
   # the following is highly recomended for Rails + "preload_app true"
   # as there's no need for the master process to hold a connection
   defined?(ActiveRecord::Base) and ActiveRecord::Base.connection.disconnect!
-  
+
   # Sequel contstants
   defined?(DB) and DB.disconnect
   defined?(SDB) and SDB.disconnect
-  
   # Riak connection via Ripple
   Thread.current[:ripple_clent] = nil if Thread.current[:ripple_client]
   #
@@ -140,6 +139,9 @@ after_fork do |server, worker|
   ENV.each do |key,value|
     server.logger.info "AFTER ENV['#{key}']=#{value}" if %w(BUNDLE_BIN_PATH GEM_PATH GEM_HOME RACK_ENV PATH BUNDLE_GEMFILE PWD).include?(key)
   end
+  if defined?(Resque)
+    Resque.redis = resque_config[rails_env]
+  end
 
   ##
   # When sent a USR2, Unicorn will suffix its pidfile with .oldbin and
@@ -154,7 +156,7 @@ after_fork do |server, worker|
 
   # wait until last worker boots to send QUIT signal
   next if worker.nr != (server.worker_processes - 1)
-  
+
   old_pid = File.expand_path('../../tmp/pids/unicorn.pid.oldbin', __FILE__)
   if File.exists?(old_pid) && server.pid != old_pid
     begin
@@ -164,7 +166,7 @@ after_fork do |server, worker|
       puts "Darn, PID #{old_pid_number} was already dead."
     end
   end
-  
+
 end
 
 
