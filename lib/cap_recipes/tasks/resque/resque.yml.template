@@ -1,0 +1,2 @@
+<%=rails_env%>: <%=resque_host%>:<%=resque_port%>
+test: localhost:6379

@@ -5,7 +5,7 @@ Capistrano::Configuration.instance(true).load do
   namespace :redis do
     roles[:redis] #make an empty role
     set :redis_ver, 'redis-2.2.11'
-    set :redis_src, "http://redis.googlecode.com/files/redis-2.2.11.tar.gz"
+    set(:redis_src) {"http://redis.googlecode.com/files/#{redis_ver}.tar.gz"}
     set :redis_base_path, "/opt/redis"
 
     set :redis_default_name, 'redis'
