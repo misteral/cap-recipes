@@ -2,18 +2,20 @@
 Capistrano::Configuration.instance(true).load do
 
   namespace :resque do
-    roles[:resque_web]
+    roles[:resque_web] #embed resque-web into your rails app https://gist.github.com/1060167
     roles[:resque_worker]
 
     set :resque_template_path, File.join(File.dirname(__FILE__),'resque.yml.template')
     set :resque_host, "127.0.0.1"
     set :resque_port, "6379"
     set :resque_ver, "1.19.0"
-    set :resque_god_path, File.join(File.dirname(__FILE__),'resque_worker.god')
+    set :resque_worker_god_path, File.join(File.dirname(__FILE__),'resque_worker.god')
     set(:resque_root) { current_path }
     set :resque_watcher, nil
     set :resque_suppress_runner, false
     set :resque_name, "resque"
+    set(:resque_user) { user }
+    set(:resque_group) { user }
 
     desc "select watcher"
     task :watcher do
@@ -22,17 +24,23 @@ Capistrano::Configuration.instance(true).load do
 
     desc "Use GOD as resque's runner"
     task :watch_with_god do
-      %w(start stop restart).each do |t|
-        task t.to_sym, :roles => :app do
-          god.cmd "#{t} #{resque_name}" unless resque_suppress_runner
+      namespace :workers do
+        %w(start stop restart).each do |t|
+          task t.to_sym, :roles => :resque_worker do
+            god.cmd "#{t} resque-workers" unless resque_suppress_runner
+          end
         end
       end
       after "god:setup", "resque:setup_god"
     end
 
     desc "setup god to watch resque"
-    task :setup_god, :roles => [:resque_web,:resque_worker] do
-      god.upload resque_god_path, 'resque.god'
+    task :setup_god do
+      setup_god_worker
+    end
+
+    task :setup_god_worker, :roles => :resque_worker do
+      god.upload resque_worker_god_path, 'resque_worker.god'
     end
 
     desc "Configure the resque Template"

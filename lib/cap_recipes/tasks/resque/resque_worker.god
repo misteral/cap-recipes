@@ -1,30 +1,24 @@
-# http://unicorn.bogomips.org/SIGNALS.html
-
 rails_env = "<%=rails_env%>"
 rails_root = "<%=resque_root%>"
 
 God.watch do |w|
-  w.group = "resques"
-  w.name = "<%=resque_name%>"
-  w.interval = 10.seconds # 30 default
-  w.env { 'RAILS_ENV' => rails_env }
+  w.group = "resque-workers"
+  w.name = "<%=resque_name%>-worker"
+  w.interval = 30.seconds # 30 default
 
   # unicorn needs to be run from the rails root
-  w.start = "cd #{rails_root} && <%=base_ruby_path%>/bin/bundle exec unicorn -c #{rails_root}/config/unicorn.rb -E #{rails_env} -D"
-
-  # QUIT gracefully shuts down workers
-  w.stop =  "kill -QUIT `cat #{rails_root}/tmp/pids/unicorn.pid`"
-
-  # USR2 causes the master to re-create itself and spawn a new worker pool
-  w.restart = "kill -USR2 `cat #{rails_root}/tmp/pids/unicorn.pid`"
+  w.start = "cd #{rails_root} && RAILS_ENV=#{rails_env} QUEUE='*' <%=base_ruby_path%>/bin/bundle exec rake resque:work"
 
   w.start_grace = 10.seconds
   w.restart_grace = 10.seconds
+  w.stop_signal = 'QUIT'
+  w.stop_timeout = 5.minutes
+  w.env = {'PIDFILE' => "#{rails_root}/tmp/pids/resque-worker.pid"}
+  w.pid_file = "#{rails_root}/tmp/pids/resque-worker.pid"
+  w.log = "#{rails_root}/log/resque-worker.log"
 
-  w.pid_file = "#{rails_root}/tmp/pids/unicorn.pid"
-
-  w.uid = '<%=unicorn_user%>'
-  w.gid = '<%=unicorn_group%>'
+  w.uid = '<%=resque_user%>'
+  w.gid = '<%=resque_group%>'
 
   # clean pid files before start if necessary
   w.behavior(:clean_pid_file)
