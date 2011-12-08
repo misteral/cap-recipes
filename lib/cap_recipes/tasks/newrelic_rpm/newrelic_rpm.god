@@ -3,8 +3,7 @@ God.watch do |w|
   w.group = "newrelic"
   w.interval = 30.seconds
   w.start = "/etc/init.d/newrelic-sysmond start"
-  w.stop = "/etc/init.d/newrelic-sysmond stop"
-  w.restart = "/etc/init.d/newrelic-sysmond restart"
+  w.stop = "/etc/init.d/newrelic-sysmond force-stop"
   w.pid_file = "/var/run/newrelic/nrsysmond.pid"
 
   w.start_grace = 30.seconds
