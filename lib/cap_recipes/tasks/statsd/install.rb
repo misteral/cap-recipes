@@ -3,14 +3,14 @@ require File.expand_path(File.dirname(__FILE__) + '/../graphite/install')
 Capistrano::Configuration.instance(true).load do
 
   namespace :statsd do
-    
+
     roles[:statsd]
     set :node_ref, 'v0.4.11'
     set :statsd_ref, '116dfe3682'
     set :statsd_conf, File.join(File.dirname(__FILE__),'statsd.js')
     set :statsd_init, File.join(File.dirname(__FILE__),'statsd.init.sh')
     set :statsd_god_path, File.join(File.dirname(__FILE__),'statsd.god')
-    
+
     desc "install Node.js and StatsD and start/restart daemons"
     task :install do
       statsd.install_packages
@@ -42,7 +42,7 @@ Capistrano::Configuration.instance(true).load do
       statsd.setup_statsd_start
       # statsd.setup_god (removed because app servers call god manually, no conf.d)
     end
-    
+
     desc "Setup Statsd Server config"
     task :setup_statsd_conf, :roles => :statsd do
       sudo "mkdir -p /etc/statsd"
@@ -59,11 +59,11 @@ Capistrano::Configuration.instance(true).load do
       sudo "/etc/init.d/statsd stop;true"
       sudo "/etc/init.d/statsd start"
     end
-    
+
     desc "setup god to watch statsd"
     task :setup_god, :roles => :statsd do
       god.upload(statsd_god_path,"statsd.god")
     end
-  end 
-   
+  end
+
 end
