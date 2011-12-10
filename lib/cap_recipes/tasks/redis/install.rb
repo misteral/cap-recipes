@@ -13,6 +13,9 @@ Capistrano::Configuration.instance(true).load do
     set :redis_default_port, 6379
     set :redis_default_timeout, '300'
     set :redis_default_conf_path, File.join(File.dirname(__FILE__),'redis.conf')
+    set :redis_god_path, File.join(File.dirname(__FILE__),'redis.god')
+    set :redis_watcher, nil
+    set :redis_suppress_runner, false
 
     set(:redis_layout) {
       [{:path => redis_base_path }] #if there's only the default then use the root of the path.
@@ -42,21 +45,34 @@ Capistrano::Configuration.instance(true).load do
     #   utilities.sudo_upload_template redis_cli_helper_path, File.join(redis_base_path,"bin","redis-cli-config"), :mode => "+x", :owner => 'root:root'
     # end
 
+    desc "select redis watcher"
+    task :watcher do
+      redis.send("watch_with_#{redis_watcher}".to_sym) unless redis_watcher.nil?
+    end
+
+    desc "Use GOD as redis's runner"
+    task :watch_with_god do
+      #This is a test pattern, and may not be the best way to handle diverging
+      #maintenance tasks based on which watcher is used but here goes:
+      #rejigger the maintenance tasks to use god when god is in play
+      %w(start stop restart).each do |t|
+        task t.to_sym, :roles => :app do
+          god.cmd "#{t} redis" unless redis_suppress_runner
+        end
+      end
+      after "god:setup", "redis:setup_god"
+    end
+
+    desc "setup god to watch redis"
+    task :setup_god, :roles => :redis do
+      with_layout do
+        god.upload redis_god_path, "#{redis_name}.god"
+      end
+    end
+
     desc "push a redis logrotate config"
     task :logrotate, :roles => :redis do
       utilities.sudo_upload_template redis_logrotate_path, "/etc/logrotate.d/redis", :owner => 'root:root'
-    end
-
-    def with_layout
-      redis_layout.each do |layout|
-        set :redis_name,    layout[:name]        || redis_default_name
-        set :redis_path,    layout[:path]        || "#{redis_base_path}/#{redis_name}"
-        set :redis_bind,    layout[:bind]        || redis_default_bind
-        set :redis_port,    layout[:port]        || redis_default_port
-        set :redis_timeout, layout[:timeout]     || redis_default_timeout
-        set :redis_conf_path, layout[:conf_path] || redis_default_conf_path
-        yield layout if block_given?
-      end
     end
 
     desc "setup redis-server"
@@ -84,6 +100,18 @@ Capistrano::Configuration.instance(true).load do
           #Process won't start unless protected by nohup
           sudo "nohup /etc/init.d/#{redis_name} #{t} > /dev/null"
         end
+      end
+    end
+
+    def with_layout
+      redis_layout.each do |layout|
+        set :redis_name,    layout[:name]        || redis_default_name
+        set :redis_path,    layout[:path]        || "#{redis_base_path}/#{redis_name}"
+        set :redis_bind,    layout[:bind]        || redis_default_bind
+        set :redis_port,    layout[:port]        || redis_default_port
+        set :redis_timeout, layout[:timeout]     || redis_default_timeout
+        set :redis_conf_path, layout[:conf_path] || redis_default_conf_path
+        yield layout if block_given?
       end
     end
 
