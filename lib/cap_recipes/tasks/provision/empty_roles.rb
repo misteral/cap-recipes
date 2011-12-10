@@ -54,7 +54,7 @@ module Capistrano
           # that were just made, so that we can make room for the next subset.
           teardown_connections_to(servers_slice) if is_subset
         end
-      end      
+      end
     end
   end
 end

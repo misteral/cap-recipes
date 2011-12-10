@@ -38,22 +38,22 @@ module Capistrano
       #   servers = find_servers :hosts => "jamis@example.host.com"
       def find_servers(options={})
         hosts  = server_list_from(ENV['HOSTS'] || options[:hosts])
-        
+
         if hosts.any?
           filter_server_list(hosts.uniq)
         else
           roles  = role_list_from(ENV['ROLES'] || options[:roles] || self.roles.keys)
           only   = options[:only] || {}
           except = options[:except] || {}
-          
+
           servers = roles.inject([]) { |list, role| list.concat(self.roles[role]) }
           servers = servers.select { |server| only.all? { |key,value| server.options[key] == value } }
           servers = servers.reject { |server| except.any? { |key,value| server.options[key] == value } }
-          
+
           #allows you to add the option :once to a task ie: task :my_task, :roles => :app, :once => true do ...
           servers = [servers.first] if options[:once] and servers.size > 1
           logger.trace "servers: #{servers.map { |s| s.host }.inspect}"
-          
+
           filter_server_list(servers.uniq)
         end
       end

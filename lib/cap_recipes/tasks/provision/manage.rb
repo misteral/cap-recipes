@@ -1,7 +1,7 @@
 # @author Donovan Bray <donnoman@donovanbray.com>
 require File.expand_path(File.dirname(__FILE__) + '/../utilities')
 
-# Provisioning hooks into many of the scripts to give a single hook to install 
+# Provisioning hooks into many of the scripts to give a single hook to install
 # the requisite software.
 #
 # The provisioning process assumes capistrano has been overriden to support empty roles
