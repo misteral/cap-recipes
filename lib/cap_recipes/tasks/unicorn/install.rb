@@ -13,9 +13,9 @@ Capistrano::Configuration.instance(true).load do
     set :unicorn_tries, -1
     set :unicorn_timeout, 30
     set(:unicorn_root) { current_path }
+    set :unicorn_backup_socket_location, %q{#{File.expand_path('../../tmp/sockets/unicorn.sock', __FILE__)}} #this IS CORRECTLY a non-interpolated string, to be evaled later.
     set :unicorn_watcher, nil
     set :unicorn_suppress_runner, false
-    set :unicorn_backup_socket_location, %q{#{File.expand_path('../../tmp/sockets/unicorn.sock', __FILE__)}} #this IS CORRECTLY a non-interpolated string, to be evaled later.
 
     desc "select watcher"
     task :watcher do
