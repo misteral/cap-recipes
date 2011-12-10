@@ -22,12 +22,6 @@ God.watch do |w|
     on.condition(:process_running) do |c|
       c.running = true
     end
-
-    # failsafe
-    on.condition(:tries) do |c|
-      c.times = 5
-      c.transition = :start
-    end
   end
 
   # start if process is not running
