@@ -10,6 +10,7 @@ Capistrano::Configuration.instance(true).load do
   set :nginx_conf_path, File.join(File.dirname(__FILE__),'nginx.conf')
   set :nginx_init_d_path, File.join(File.dirname(__FILE__),'nginx.init')
   set :nginx_init_d, "nginx"
+  set :nginx_client_max_body_size, "1M"
 
   namespace :nginx do
 
