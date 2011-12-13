@@ -16,7 +16,7 @@ Capistrano::Configuration.instance(true).load do
         sudo "/etc/init.d/#{nginx_init_d} #{t}"
       end
     end
-    
+
     desc "Write the application conf"
     task :configure, :roles => :app do
       utilities.sudo_upload_template nginx_app_conf_path, "#{nginx_path}/sites-available/#{application}.conf"

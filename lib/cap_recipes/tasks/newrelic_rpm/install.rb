@@ -28,7 +28,7 @@ Capistrano::Configuration.instance(true).load do
     end
 
     desc "select watcher"
-    task :watcher do 
+    task :watcher do
       newrelic_rpm.send("watch_with_#{newrelic_rpm_watcher}".to_sym) unless newrelic_rpm_watcher.nil?
     end
 

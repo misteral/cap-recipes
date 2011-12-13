@@ -51,7 +51,7 @@ do_start()
 
   RETVAL=`$DAEMON ping`
   [ "$RETVAL" = "pong" ] && return 1
-  
+
 #
 # --chuid just doesn't seem to work at all
 #
