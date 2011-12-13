@@ -16,6 +16,7 @@ Capistrano::Configuration.instance(true).load do
     set :resque_name, "resque"
     set(:resque_user) { user }
     set(:resque_group) { user }
+    set :resque_worker_count, "2"
 
     desc "select watcher"
     task :watcher do
