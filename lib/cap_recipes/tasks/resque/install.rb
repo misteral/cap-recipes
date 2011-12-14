@@ -29,6 +29,12 @@ Capistrano::Configuration.instance(true).load do
         %w(start stop restart).each do |t|
           task t.to_sym, :roles => :resque_worker do
             god.cmd "#{t} #{resque_name}#{"; true" if t == 'stop'}" unless resque_suppress_runner
+            unless resque_suppress_runner
+              begin
+                sudo "pkill -QUIT -f #{resque_name}" if t == 'stop' #Clean up orphaned resque workers.
+              rescue
+              end
+            end
           end
         end
       end
