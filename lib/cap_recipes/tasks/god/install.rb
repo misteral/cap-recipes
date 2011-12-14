@@ -27,11 +27,10 @@ Capistrano::Configuration.instance(true).load do
     def upload(src,name)
       sudo "mkdir -p #{god_confd}"
       utilities.sudo_upload_template src, "#{god_confd}/#{name}"
-      god.reload
     end
 
     # TODO: update rubies other than ruby19 to conform
-    # New Concept ':except => {:no_ruby => true}' to allow all systems by default 
+    # New Concept ':except => {:no_ruby => true}' to allow all systems by default
     # to have ruby installed to allow use of ruby gems like god on all systems
     # regardless of whether they have releases deployed to them, they may have other things
     # that we want god to watch on them.
@@ -41,7 +40,6 @@ Capistrano::Configuration.instance(true).load do
       god.send("install_from_#{god_install_from}".to_sym)
       utilities.sudo_upload_template god_init_path, god_init, :mode => "+x"
       sudo "update-rc.d -f god defaults"
-      sudo "rm -rf #{god_confd}" #ensure clean config directory.
     end
 
     desc "install god init"
@@ -62,6 +60,7 @@ Capistrano::Configuration.instance(true).load do
 
     desc "setup god"
     task :setup, :except => {:no_ruby => true} do
+      sudo "rm -rf #{god_confd}"
       sudo "mkdir -p #{god_confd}"
       utilities.sudo_upload_template god_config_path, god_config
     end

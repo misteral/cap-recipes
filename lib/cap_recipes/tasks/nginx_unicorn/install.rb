@@ -47,7 +47,7 @@ Capistrano::Configuration.instance(true).load do
     ]}
 
     desc "select watcher"
-    task :watcher do 
+    task :watcher do
       nginx_unicorn.send("watch_with_#{nginx_unicorn_watcher}".to_sym) unless nginx_unicorn_watcher.nil?
     end
 

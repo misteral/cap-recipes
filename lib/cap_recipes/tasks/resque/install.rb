@@ -28,7 +28,7 @@ Capistrano::Configuration.instance(true).load do
       namespace :workers do
         %w(start stop restart).each do |t|
           task t.to_sym, :roles => :resque_worker do
-            god.cmd "#{t} resque-workers" unless resque_suppress_runner
+            god.cmd "#{t} #{resque_name}#{"; true" if t == 'stop'}" unless resque_suppress_runner
           end
         end
       end
