@@ -29,12 +29,12 @@ Capistrano::Configuration.instance(true).load do
       sudo "update-rc.d haproxy start 37 2 3 4 5 . stop 20 0 1 6 ."
       sudo "update-rc.d networking start 34 2 3 4 5 ."
     end
-    
+
     desc "Enable Haproxy"
     task :enable, :roles => :haproxy do
       sudo "sed -i 's/ENABLED=.*/ENABLED=1/g' /etc/default/haproxy"
     end
-    
+
     desc "Disable Haproxy"
     task :disable, :roles => :haproxy do
       sudo "sed -i 's/ENABLED=.*/ENABLED=0/g' /etc/default/haproxy"
@@ -53,7 +53,7 @@ Capistrano::Configuration.instance(true).load do
         end
       end
     end
-    
+
     desc "Use GOD as haproxy's runner"
     task :run_with_god do
       %w(start stop restart).each do |t|
@@ -73,6 +73,6 @@ Capistrano::Configuration.instance(true).load do
     task :setup, :roles => :haproxy do
       utilities.sudo_upload_template haproxy_template_path, "/etc/haproxy/haproxy.cfg", :owner => "#{haproxy_user}:#{haproxy_group}"
     end
-    
+
   end
 end

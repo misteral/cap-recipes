@@ -5,10 +5,10 @@ require File.expand_path(File.dirname(__FILE__) + '/../utilities')
 Capistrano::Configuration.instance(:must_exist).load do
 
   namespace :bundler do
-    
+
     # Intelligent Bundler Handling, requires no rollbacks
     # Each release gets their own bundle seeded from the last built bundle
-    # to make the deploys faster, and the running application doesn't 
+    # to make the deploys faster, and the running application doesn't
     # get its bundle changed out from under it.
 
     set :bundler_opts, %w(--deployment --no-color --quiet)

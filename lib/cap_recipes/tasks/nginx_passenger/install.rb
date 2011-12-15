@@ -80,7 +80,7 @@ Capistrano::Configuration.instance(true).load do
       utilities.sudo_upload_template nginx_passenger_conf_path, "#{nginx_passenger_root}/conf/nginx.conf"
       utilities.sudo_upload_template nginx_passenger_init_d_path,"/etc/init.d/#{nginx_passenger_init_d}", :mode => "u+x"
     end
-    
+
     desc "Write the application conf"
     task :configure, :roles => :app do
       utilities.sudo_upload_template nginx_passenger_app_conf_path, "#{nginx_passenger_root}/conf/sites-available/#{application}.conf"
@@ -96,7 +96,7 @@ Capistrano::Configuration.instance(true).load do
     task :disable, :roles => :app do
       sudo "rm #{nginx_passenger_root}/conf/sites-enabled/#{application}.conf"
     end
-    
+
     desc "Nginx Passenger Reopen"
     task :reopen, :roles => :app do
       sudo "#{nginx_passenger_root}/sbin/nginx -s reopen;true"
@@ -108,7 +108,7 @@ Capistrano::Configuration.instance(true).load do
         sudo "/etc/init.d/#{nginx_passenger_init_d} #{t}"
       end
     end
-    
+
     namespace :passenger do
       desc "restart passenger application"
       task :restart, :roles => :app do

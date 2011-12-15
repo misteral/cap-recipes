@@ -4,5 +4,5 @@ Capistrano::Configuration.instance(true).load do
   # that allows a deploy:cold to finish without starting procs
   # that you may not want started immediately.
   before "monit:restart", "riak:setup_monit"
-  before "god:setup", "riak:setup_god"
+  after "god:setup", "riak:setup_god"
 end
