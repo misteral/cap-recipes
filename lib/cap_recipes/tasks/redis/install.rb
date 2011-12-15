@@ -9,6 +9,7 @@ Capistrano::Configuration.instance(true).load do
     set :redis_base_path, "/opt/redis"
 
     set :redis_default_name, 'redis'
+    set :redis_default_bind_eth, nil
     set :redis_default_bind, nil
     set :redis_default_port, 6379
     set :redis_default_timeout, '300'
@@ -25,6 +26,11 @@ Capistrano::Configuration.instance(true).load do
     set :redis_logrotate_path, File.join(File.dirname(__FILE__),'redis.logrotate')
     set :redis_cli_helper_path, File.join(File.dirname(__FILE__),'redis-cli-config.sh')
     #  set(:redis_cli_cmd) {"#{redis_path}/bin/redis-cli#{" -h #{redis_bind}" if redis_bind}#{" -p #{redis_port}" if redis_port} "}
+
+
+    def ipaddress(eth)
+      %Q{`ifconfig #{eth} | awk '/inet addr/ {split ($2,A,":"); print A[2]}'`}
+    end
 
     desc "install redis-server"
     task :install, :roles => :redis do
@@ -56,8 +62,8 @@ Capistrano::Configuration.instance(true).load do
       #maintenance tasks based on which watcher is used but here goes:
       #rejigger the maintenance tasks to use god when god is in play
       %w(start stop restart).each do |t|
-        task t.to_sym, :roles => :app do
-          god.cmd "#{t} redis" unless redis_suppress_runner
+        task t.to_sym, :roles => :redis do
+          god.cmd "#{t} redi" unless redis_suppress_runner
         end
       end
       after "god:setup", "redis:setup_god"
@@ -84,6 +90,7 @@ Capistrano::Configuration.instance(true).load do
         sudo "chown -R redis:redis #{redis_path}"
         utilities.sudo_upload_template redis_init_path, "/etc/init.d/#{redis_name}", :mode => "+x", :owner => 'root:root'
         utilities.sudo_upload_template redis_conf_path, "#{redis_path}/#{redis_name}.conf", :owner => "redis:redis"
+        sudo "sed -i s/#{redis_bind}/#{ipaddress(redis_bind_eth)}/g #{redis_path}/#{redis_name}.conf"
         sudo "update-rc.d -f #{redis_name} defaults"
       end
     end
@@ -111,6 +118,8 @@ Capistrano::Configuration.instance(true).load do
         set :redis_port,    layout[:port]        || redis_default_port
         set :redis_timeout, layout[:timeout]     || redis_default_timeout
         set :redis_conf_path, layout[:conf_path] || redis_default_conf_path
+        set :redis_bind_eth, layout[:bin_eth]    || redis_default_bind_eth
+        set :redis_bind, "###ETH###" if redis_bind_eth
         yield layout if block_given?
       end
     end
