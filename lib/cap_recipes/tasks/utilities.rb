@@ -76,6 +76,12 @@ module Utilities
     sudo "#{apt_get} -qyu --force-yes --reinstall install #{packages.join(" ")}"
   end
 
+  def apt_remove(packages)
+    packages = packages.split(/\s+/) if packages.respond_to?(:split)
+    packages = Array(packages)
+    sudo "#{apt_get} -qyu --force-yes remove #{packages.join(" ")}"
+  end
+
   def apt_update
     sudo "#{apt_get} -qy update"
   end
