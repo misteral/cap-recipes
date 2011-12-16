@@ -81,7 +81,7 @@ stdout_path File.expand_path('../../log/unicorn.log', __FILE__)
 preload_app true
 GC.respond_to?(:copy_on_write_friendly=) and
   GC.copy_on_write_friendly = true
-  
+
 # sets the working directory for Unicorn.  This ensures SIGUSR2 will
 # start a new instance of Unicorn in this directory.  This may be
 # a symlink, a common scenario for Capistrano users.  Unlike
@@ -138,9 +138,6 @@ end
 after_fork do |server, worker|
   ENV.each do |key,value|
     server.logger.info "AFTER ENV['#{key}']=#{value}" if %w(BUNDLE_BIN_PATH GEM_PATH GEM_HOME RACK_ENV PATH BUNDLE_GEMFILE PWD).include?(key)
-  end
-  if defined?(Resque)
-    Resque.redis = resque_config[rails_env]
   end
 
   ##
