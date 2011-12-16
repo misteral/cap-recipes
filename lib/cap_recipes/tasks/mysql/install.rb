@@ -6,6 +6,8 @@ Capistrano::Configuration.instance(true).load do
   namespace :mysql do
     roles[:mysqld] #make an empty role
     set(:mysql_admin_password) { utilities.ask "mysql_admin_password:"}
+    set :mysql_backup_script, File.join(File.dirname(__FILE__),'mysql_backup_s3.sh')
+    set :mysql_backup_script_path, "/root/script/mysql_backups_s3.sh"
 
     desc "Install Mysql-server"
     task :install, :roles => :mysqld do
@@ -44,6 +46,19 @@ Capistrano::Configuration.instance(true).load do
         sudo "rm non-interactive.txt"
       end
 
+    end
+
+    desc "Transfer backup script to host"
+    task :upload_backup_script, :roles => :mysqld do
+        run "#{sudo} mkdir -p /root/script"
+        run "#{sudo} mkdir -p /mnt/mysql_backups"
+        utilities.sudo_upload_template mysql_backup_script, "#{mysql_backup_script_path}", :mode => "654", :owner => 'root:root'
+    end
+
+    desc "Run Backup"
+    task :run_backup, :roles => :mysqld do
+        upload_backup_script
+        run "#{sudo} /root/script/mysql_backup_s3.sh"
     end
 
     desc "Install Mysql Developement Libraries"
