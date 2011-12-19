@@ -17,16 +17,17 @@ worker_count.times do |num|
     w.name = "<%=resque_name%>-worker-#{num}"
     w.interval = 30.seconds # 30 default
 
+    w.pid_file = "#{rails_root}/tmp/pids/#{w.name}.pid"
+    w.log = "#{rails_root}/log/#{w.name}.log"
+
     # unicorn needs to be run from the rails root
-    w.start = "cd #{rails_root} && RAILS_ENV=#{rails_env} QUEUE='*' <%=base_ruby_path%>/bin/bundle exec rake resque:work"
+    w.start = "cd #{rails_root} && RAILS_ENV=#{rails_env} PIDFILE=#{rails_root}/tmp/pids/#{w.name}.pid QUEUE='*' <%=base_ruby_path%>/bin/bundle exec rake resque:work"
 
     w.start_grace = 10.seconds
     w.restart_grace = 10.seconds
     w.stop_signal = 'QUIT'
     w.stop_timeout = 5.minutes
-    w.env = {'PIDFILE' => "#{rails_root}/tmp/pids/<%=resque_name%>-worker-#{num}.pid"}
-    w.pid_file = "#{rails_root}/tmp/pids/<%=resque_name%>-worker-#{num}.pid"
-    w.log = "#{rails_root}/log/<%=resque_name%>-worker-#{num}.log"
+
 
     w.uid = '<%=resque_user%>'
     w.gid = '<%=resque_group%>'
