@@ -17,6 +17,11 @@ LAST="${LOCATION}/last"
 DESTINATION="s3://homerun-backups/${SERVER}"
 ROOT="/root/script"
 
+<% if mysql_backup_stop_sql_thread %>
+# Leave the IO_THREAD running for faster catchup
+mysql -uroot -e 'STOP SLAVE SQL_THREAD'
+<% end %>
+
 # Prep LOCATION for New Backup
 rm -rf "${LAST}"
 mkdir -p "${CURRENT}"
@@ -52,6 +57,11 @@ do
     echo "==========================="
     ls -ltrh ${DUMP_PATH}
 done
+
+<% if mysql_backup_stop_sql_thread %>
+# Startup the SQL_THREAD again
+mysql -uroot -e 'START SLAVE SQL_THREAD'
+<% end %>
 
 #Package CURRENT up and move it to the final DESTINATION
 echo "==========================="
