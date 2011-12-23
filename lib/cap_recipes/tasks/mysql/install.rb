@@ -4,15 +4,34 @@ require File.expand_path(File.dirname(__FILE__) + '/../utilities')
 Capistrano::Configuration.instance(true).load do
 
   namespace :mysql do
-    roles[:mysqld] #make an empty role
+    roles[:mysqld]
+    roles[:mysqld_backup]
     set(:mysql_admin_password) { utilities.ask "mysql_admin_password:"}
     set :mysql_backup_script, File.join(File.dirname(__FILE__),'mysql_backup_s3.sh')
     set :mysql_backup_script_path, "/root/script/mysql_backup_s3.sh"
     set :mysql_restore_script, File.join(File.dirname(__FILE__),'mysql_restore.sh')
     set :mysql_restore_script_path, "/root/script/mysql_restore.sh"
+    set :mysql_backup_log_path, "/tmp/mysql_backup.log"
+    set(:mysql_backup_log_dest) {File.join(utilities.caproot,'log','backups')}
     set :mysql_restore_table_priorities, nil
     set :mysql_restore_source_name, nil
     set :mysql_backup_stop_sql_thread, false
+    set :mysql_client_user, nil
+    set :mysql_client_pass, nil
+    set :mysql_client_executable, "mysql"
+    set :mysql_client_use_sudo, true
+    set :mysql_backup_archive_watermark, "0m"
+    set :mysql_backup_s3_bucket, "mysql-backups"
+
+    def mysql_client_cmd(cmd)
+      command = []
+      command << "#{sudo}" if mysql_client_use_sudo
+      command << mysql_client_executable
+      command << "-u#{mysql_client_user}" if mysql_client_user
+      command << "-p#{mysql_client_pass}" if mysql_client_pass
+      command << "-e \"#{cmd}\""
+      command.join(" ")
+    end
 
     desc "Install Mysql-server"
     task :install, :roles => :mysqld do
@@ -53,24 +72,70 @@ Capistrano::Configuration.instance(true).load do
 
     end
 
-    desc "Transfer backup script to host"
-    task :upload_backup_script, :roles => :mysqld do
-      run "#{sudo} mkdir -p /root/script"
-      run "#{sudo} mkdir -p /mnt/mysql_backups"
-      utilities.sudo_upload_template mysql_backup_script, mysql_backup_script_path, :mode => "654", :owner => 'root:root'
-      utilities.sudo_upload_template mysql_restore_script, mysql_restore_script_path, :mode => "654", :owner => 'root:root'
-    end
-
-    desc "Run Backup"
-    task :run_backup, :roles => :mysqld do
-      upload_backup_script
-      run "#{sudo} /root/script/mysql_backup_s3.sh"
-    end
-
     desc "Install Mysql Developement Libraries"
     task :install_client_libs, :except => {:no_release => true} do
       utilities.apt_install "libmysqlclient-dev"
     end
+
+    namespace :backup do
+
+      desc "Transfer backup script to host"
+      task :upload_backup_script, :roles => :mysqld_backup do
+        run "#{sudo} mkdir -p /root/script"
+        run "#{sudo} mkdir -p /mnt/mysql_backups"
+        utilities.sudo_upload_template mysql_backup_script, mysql_backup_script_path, :mode => "654", :owner => 'root:root'
+        utilities.sudo_upload_template mysql_restore_script, mysql_restore_script_path, :mode => "654", :owner => 'root:root'
+      end
+
+      desc "Trigger Backup"
+      task :trigger, :roles => :mysqld_backup do
+        upload_backup_script
+        remove_backup_log
+        run "#{sudo} sh -c 'nohup /root/script/mysql_backup_s3.sh > #{mysql_backup_log_path} 2>&1 &'", :pty => false
+      end
+
+      desc "validate backup"
+      task :verify, :roles => :mysqld_backup do
+        ensure_slave_running
+        retrieve_backup_log
+        check_backup_finished
+        remove_backup_log
+      end
+
+      desc "checks that the backup appears to have finished"
+      task :check_backup_finished, :roles => :mysqld_backup do
+        run "grep 'MYSQL BACKUP FINISHED' #{mysql_backup_log_path}"
+      end
+
+      desc "retreive the backup log"
+      task :retrieve_backup_log, :roles => :mysqld_backup do
+        run_locally "mkdir -p #{mysql_backup_log_dest}"
+        top.download mysql_backup_log_path, "#{mysql_backup_log_dest}/backup-$CAPISTRANO:HOST$.log", :via => :scp
+      end
+
+      desc "remove the backup log"
+      task :remove_backup_log, :roles => :mysqld_backup do
+        sudo "rm -f #{mysql_backup_log_path}"
+      end
+
+      desc "ensure slave is running"
+      task :ensure_slave_running, :roles => :mysqld_backup do
+        if mysql_backup_stop_sql_thread
+          # It should be started, intervene if it's not.
+          begin
+            run %Q{test `#{mysql_client_cmd("SHOW SLAVE STATUS\G")} | grep Running | grep -c Yes` = '2'}
+          rescue e
+            raise Capistrano::Error, "Mysql threads are not running #{e.message}"
+          ensure
+            run mysql_client_cmd("START SLAVE")
+          end
+        end
+      end
+
+
+
+    end
+
 
   end
 

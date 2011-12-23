@@ -14,7 +14,8 @@ SERVER=`hostname`
 LOCATION="/mnt/mysql_backups"
 CURRENT="${LOCATION}/current"
 LAST="${LOCATION}/last"
-DESTINATION="s3://homerun-backups/${SERVER}"
+BUCKET="s3://<%=mysql_backup_s3_bucket%>"
+DESTINATION="${BUCKET}/${SERVER}"
 ROOT="/root/script"
 
 <% if mysql_backup_stop_sql_thread %>
@@ -74,6 +75,7 @@ ls -ltrh "${LOCATION}/${PACKAGE}"
 echo "==========================="
 echo "  MOVING TO S3"
 echo "==========================="
+s3cmd mb ${BUCKET}
 # Monthly Full Backup of all Databases
 if [ ${DOM} = "01" ]; then
      echo "Moving Monthly Backup"
