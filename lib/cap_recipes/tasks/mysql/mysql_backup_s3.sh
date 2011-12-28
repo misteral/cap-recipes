@@ -69,9 +69,14 @@ echo "==========================="
 echo "  PACKAGING"
 echo "==========================="
 PACKAGE="mysql_${SERVER}_${DATE}.tar.gz"
-tar -czf "${LOCATION}/${PACKAGE}" -C "${CURRENT}" "${DATE}"
+
+# S3 has a 5GB limit so we break it up at 4GB.
+# Rejoin later with: cat *.gz.*|tar xzf -
+
+tar czf - --directory "${CURRENT}" "${DATE}" | split -b4G - "${LOCATION}/${PACKAGE}".
+
 echo "Done Creating Package(s):"
-ls -ltrh "${LOCATION}/${PACKAGE}"
+ls -ltrh "${LOCATION}/${PACKAGE}.*"
 echo "==========================="
 echo "  MOVING TO S3"
 echo "==========================="
@@ -79,15 +84,15 @@ s3cmd mb ${BUCKET}
 # Monthly Full Backup of all Databases
 if [ ${DOM} = "01" ]; then
      echo "Moving Monthly Backup"
-     s3cmd put ${LOCATION}/${PACKAGE} ${DESTINATION}/${YEAR}/${MONTH}/${PACKAGE}
+     s3cmd put ${LOCATION}/${PACKAGE}.* ${DESTINATION}/${YEAR}/${MONTH}/${PACKAGE}/
   else
 
  if [ ${DNOW} = ${DOWEEKLY} ]; then
      echo "Moving Weekly Backup"
-     s3cmd put ${LOCATION}/${PACKAGE} ${DESTINATION}/${YEAR}/${MONTH}/${WEEK}/${PACKAGE}
+     s3cmd put ${LOCATION}/${PACKAGE}.* ${DESTINATION}/${YEAR}/${MONTH}/${WEEK}/${PACKAGE}/
   else
      echo "Moving Daily Backup"
-     s3cmd put ${LOCATION}/${PACKAGE} ${DESTINATION}/${YEAR}/${MONTH}/${WEEK}/${DOW}/${PACKAGE}
+     s3cmd put ${LOCATION}/${PACKAGE}.* ${DESTINATION}/${YEAR}/${MONTH}/${WEEK}/${DOW}/${PACKAGE}/
  fi
 fi
 

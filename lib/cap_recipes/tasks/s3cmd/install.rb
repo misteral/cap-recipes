@@ -14,6 +14,9 @@ Capistrano::Configuration.instance(true).load do
 
     desc "install s3cmd"
     task :install do
+      run "wget -O- -q http://s3tools.org/repo/deb-all/stable/s3tools.key | #{sudo} apt-key add -"
+      sudo "wget -O/etc/apt/sources.list.d/s3tools.list http://s3tools.org/repo/deb-all/stable/s3tools.list"
+      utilities.apt_update
       utilities.apt_install "s3cmd"
       setup
       verify
