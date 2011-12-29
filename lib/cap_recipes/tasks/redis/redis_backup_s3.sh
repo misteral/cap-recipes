@@ -1,6 +1,7 @@
-#!/bin/sh
-
+#!/bin/bash
 set -e
+#set -x
+
 DATEC="`which date`"
 DATE=`${DATEC} +%Y-%m-%d_%Hh%Mm`                # Datestamp e.g 2002-09-21
 YEAR=`${DATEC} +%Y`
@@ -11,17 +12,13 @@ MONTH=`${DATEC} +%B`                                # Month e.g January
 WEEK=`${DATEC} +%V`                                # Week Number e.g 37
 DOWEEKLY=7                                      # Which day do you want weekly backups? (1 to 7 where 1 is Monday)
 SERVER=`hostname`
-LOCATION="/mnt/mysql_backups"
+LOCATION="<%=redis_backup_location%>"
 CURRENT="${LOCATION}/current"
 LAST="${LOCATION}/last"
-BUCKET="s3://<%=mysql_backup_s3_bucket%>"
+SOURCE="<%=redis_backup_source_spec%>"
+DUMP_PATH="${CURRENT}/${DATE}"
+BUCKET="s3://<%=redis_backup_s3_bucket%>"
 DESTINATION="${BUCKET}/${SERVER}"
-ROOT="/root/script"
-
-<% if mysql_backup_stop_sql_thread %>
-# Leave the IO_THREAD running for faster catchup
-mysql -uroot -e 'STOP SLAVE SQL_THREAD'
-<% end %>
 
 # Prep LOCATION for New Backup
 rm -rf "${LAST}"
@@ -29,53 +26,34 @@ mkdir -p "${CURRENT}"
 mv "${CURRENT}" "${LAST}"
 mkdir -p "${CURRENT}/${DATE}"
 
-# Inject the Restore Script; You can always grab the latest for the infrastructure repo
-# but this guarantees it is immediately at hand.
-cp ${ROOT}/mysql_restore.sh "${CURRENT}/${DATE}"
 
-# Start Dumping
-DATABASES=`mysql -uroot --batch --skip-column-names -e 'show databases' | grep  -v 'information_schema\|mysql'`
-for DBNAME in ${DATABASES}
-do
-    echo "==========================="
-    echo "  DUMP DATABASE"
-    echo "==========================="
-    DUMP_PATH="${CURRENT}/${DATE}/${DBNAME}"
-    echo "Database: ${DBNAME} Dump Path: ${DUMP_PATH}"
-    mkdir -p "${DUMP_PATH}"
-    echo "Schema:"
-    mysqldump --user=root --opt --no-data ${DBNAME} > "${DUMP_PATH}/schema.sql"
-    echo "Tables:"
-    TABLES=`mysql -uroot --batch --skip-column-names -e "SELECT table_name FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = '${DBNAME}' ORDER BY TABLE_ROWS;"`
-    for TBNAME in ${TABLES}
-    do
-        echo -n "${TBNAME} "
-        mysqldump --user=root --opt --no-create-info ${DBNAME} ${TBNAME} > ${DUMP_PATH}/${TBNAME}.sql
-    done
-    echo ""
-    echo "==========================="
-    echo "  DUMP LISTING"
-    echo "==========================="
-    ls -ltrh ${DUMP_PATH}
-done
-
-<% if mysql_backup_stop_sql_thread %>
-# Startup the SQL_THREAD again
-mysql -uroot -e 'START SLAVE SQL_THREAD'
+<% redis.with_layout do %>
+<% if redis_backup %>
+echo "==========================="
+echo "  REDIS BACKING UP <%=redis_name%>"
+echo "==========================="
+mkdir -p ${DUMP_PATH}/<%=redis_name%>
+echo "Redis Backup destination: ${DUMP_PATH}/<%=redis_name%>"
+echo "Force a synchronous save"
+<%=redis_path%>/bin/redis-cli -h <%=redis_bind%> -p <%=redis_port%> save
+<%=redis_path%>/bin/redis-cli -h <%=redis_bind%> -p <%=redis_port%> info > ${DUMP_PATH}/<%=redis_name%>/info.log
+echo ''
+cp <%=redis_rdb_file%> ${DUMP_PATH}/<%=redis_name%>
+  <% end %>
 <% end %>
-
-#Package CURRENT up and move it to the final DESTINATION
 echo "==========================="
 echo "  PACKAGING"
 echo "==========================="
-PACKAGE="mysql_${SERVER}_${DATE}.tar.gz"
+PACKAGE="redis_${SERVER}_${DATE}.tar.gz"
 
 # S3 has a 5GB limit so we break it up at 4GB.
 # Rejoin later with: cat *.gz.*|tar xzf -
 
 tar czf - --directory "${CURRENT}" "${DATE}" | split -b4G - ${LOCATION}/${PACKAGE}.
 
-echo "Done Creating Package(s):"
+echo "==========================="
+echo "  PACKAGE LISTING"
+echo "==========================="
 ls -ltrh ${LOCATION}/${PACKAGE}.*
 echo "==========================="
 echo "  MOVING TO S3"
@@ -95,7 +73,6 @@ if [ ${DOM} = "01" ]; then
      s3cmd put ${LOCATION}/${PACKAGE}.* ${DESTINATION}/${YEAR}/${MONTH}/${WEEK}/${DOW}/${PACKAGE}/
  fi
 fi
-
 echo "==========================="
-echo "  MYSQL BACKUP FINISHED"
+echo "  REDIS BACKUP FINISHED"
 echo "==========================="

@@ -7,21 +7,21 @@ Capistrano::Configuration.instance(true).load do
     roles[:mysqld]
     roles[:mysqld_backup]
     set(:mysql_admin_password) { utilities.ask "mysql_admin_password:"}
-    set :mysql_backup_script, File.join(File.dirname(__FILE__),'mysql_backup_s3.sh')
-    set :mysql_backup_script_path, "/root/script/mysql_backup_s3.sh"
-    set :mysql_restore_script, File.join(File.dirname(__FILE__),'mysql_restore.sh')
-    set :mysql_restore_script_path, "/root/script/mysql_restore.sh"
-    set :mysql_backup_log_path, "/tmp/mysql_backup.log"
-    set(:mysql_backup_log_dest) {File.join(utilities.caproot,'log','backups')}
     set :mysql_restore_table_priorities, nil
     set :mysql_restore_source_name, nil
-    set :mysql_backup_stop_sql_thread, false
     set :mysql_client_user, nil
     set :mysql_client_pass, nil
     set :mysql_client_executable, "mysql"
     set :mysql_client_use_sudo, true
+    set :mysql_restore_script, File.join(File.dirname(__FILE__),'mysql_restore.sh')
+    set :mysql_restore_script_path, "/root/script/mysql_restore.sh"
     set :mysql_backup_archive_watermark, "0m"
     set :mysql_backup_s3_bucket, "mysql-backups"
+    set :mysql_backup_log_path, "/tmp/mysql_backup.log"
+    set(:mysql_backup_log_dest) {File.join(utilities.caproot,'log','backups')}
+    set :mysql_backup_stop_sql_thread, false
+    set :mysql_backup_script, File.join(File.dirname(__FILE__),'mysql_backup_s3.sh')
+    set :mysql_backup_script_path, "/root/script/mysql_backup_s3.sh"
 
     def mysql_client_cmd(cmd)
       command = []
@@ -83,6 +83,7 @@ Capistrano::Configuration.instance(true).load do
       task :upload_backup_script, :roles => :mysqld_backup do
         run "#{sudo} mkdir -p /root/script"
         run "#{sudo} mkdir -p /mnt/mysql_backups"
+        utilities.apt_install "at"
         utilities.sudo_upload_template mysql_backup_script, mysql_backup_script_path, :mode => "654", :owner => 'root:root'
         utilities.sudo_upload_template mysql_restore_script, mysql_restore_script_path, :mode => "654", :owner => 'root:root'
       end
@@ -91,7 +92,7 @@ Capistrano::Configuration.instance(true).load do
       task :trigger, :roles => :mysqld_backup do
         upload_backup_script
         remove_backup_log
-        run "#{sudo} sh -c 'nohup /root/script/mysql_backup_s3.sh > #{mysql_backup_log_path} 2>&1 &'", :pty => false
+        sudo %Q{bash -c "echo '/root/script/mysql_backup_s3.sh > #{mysql_backup_log_path} 2>&1' | at now"}
       end
 
       desc "validate backup"

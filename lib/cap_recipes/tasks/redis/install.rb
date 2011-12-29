@@ -14,9 +14,19 @@ Capistrano::Configuration.instance(true).load do
     set :redis_default_port, 6379
     set :redis_default_timeout, '300'
     set :redis_default_conf_path, File.join(File.dirname(__FILE__),'redis.conf')
+    set :redis_default_backup, false
+    set :redis_default_rdb_file, '/var/lib/redis/dump.rdb'
     set :redis_god_path, File.join(File.dirname(__FILE__),'redis.god')
     set :redis_watcher, nil
     set :redis_suppress_runner, false
+    set :redis_backup_source_spec, "/var/lib/redis/dump-*.rdb"
+    set :redis_backup_archive_watermark, "0m"
+    set :redis_backup_s3_bucket, "redis-backups"
+    set :redis_backup_log_path, "/tmp/redis_backup.log"
+    set(:redis_backup_log_dest) {File.join(utilities.caproot,'log','backups')}
+    set :redis_backup_script, File.join(File.dirname(__FILE__),'redis_backup_s3.sh')
+    set :redis_backup_script_path, "/root/script/redis_backup_s3.sh"
+    set :redis_backup_location, "/mnt/redis_backups"
 
     set(:redis_layout) {
       [{:path => redis_base_path }] #if there's only the default then use the root of the path.
@@ -110,15 +120,88 @@ Capistrano::Configuration.instance(true).load do
       end
     end
 
+    namespace :backup do
+
+      desc "Transfer backup script to host"
+      task :upload_backup_script, :roles => :redis_backup do
+        run "#{sudo} mkdir -p /root/script"
+        run "#{sudo} mkdir -p #{redis_backup_location}"
+        utilities.apt_install "at"
+        utilities.sudo_upload_template redis_backup_script, redis_backup_script_path, :mode => "654", :owner => 'root:root'
+        with_layout do
+          sudo "sed -i s/#{redis_bind}/#{ipaddress(redis_bind_eth)}/g #{redis_backup_script_path}"
+        end
+      end
+
+      desc "Trigger Backup"
+      task :trigger, :roles => :redis_backup do
+        upload_backup_script
+        remove_backup_log
+        sudo %Q{bash -c "echo '/root/script/redis_backup_s3.sh > #{redis_backup_log_path} 2>&1' | at now"}
+      end
+
+      desc "validate backup"
+      task :verify, :roles => :redis_backup do
+        retrieve_backup_log
+        check_backup_finished
+        remove_backup_log
+      end
+
+      desc "checks that the backup appears to have finished"
+      task :check_backup_finished, :roles => :redis_backup do
+        run "grep 'REDIS BACKUP FINISHED' #{redis_backup_log_path}"
+      end
+
+      desc "retreive the backup log"
+      task :retrieve_backup_log, :roles => :redis_backup do
+        run_locally "mkdir -p #{redis_backup_log_dest}"
+        top.download redis_backup_log_path, "#{redis_backup_log_dest}/backup-$CAPISTRANO:HOST$.log", :via => :scp
+      end
+
+      desc "remove the backup log"
+      task :remove_backup_log, :roles => :redis_backup do
+        sudo "rm -f #{redis_backup_log_path}"
+      end
+
+    end
+
+    ##
+    # Allow a flexible configuration with multiple redis servers on the same system
+    #
+    # set(:redis_layout) {
+    #   [
+    #     {
+    #       :name => 'redis',
+    #       :port => '6400',
+    #       :backup => true
+    #     },
+    #     {
+    #       :name => 'redis_resque',
+    #       :port => '6600',
+    #       :backup => true
+    #     },
+    #     {
+    #       :name => 'redis_cache',
+    #       :port => '6700'
+    #     },
+    #     {
+    #       :name => 'redis_vanity',
+    #       :port => '6800'
+    #     }
+    #   ]
+    # }
+
     def with_layout
       redis_layout.each do |layout|
-        set :redis_name,    layout[:name]        || redis_default_name
-        set :redis_path,    layout[:path]        || "#{redis_base_path}/#{redis_name}"
-        set :redis_bind,    layout[:bind]        || redis_default_bind
-        set :redis_port,    layout[:port]        || redis_default_port
-        set :redis_timeout, layout[:timeout]     || redis_default_timeout
-        set :redis_conf_path, layout[:conf_path] || redis_default_conf_path
-        set :redis_bind_eth, layout[:bin_eth]    || redis_default_bind_eth
+        set :redis_name,      layout[:name]         || redis_default_name
+        set :redis_path,      layout[:path]         || "#{redis_base_path}/#{redis_name}"
+        set :redis_bind,      layout[:bind]         || redis_default_bind
+        set :redis_port,      layout[:port]         || redis_default_port
+        set :redis_timeout,   layout[:timeout]      || redis_default_timeout
+        set :redis_conf_path, layout[:conf_path]    || redis_default_conf_path
+        set :redis_bind_eth,  layout[:bind_eth]     || redis_default_bind_eth
+        set :redis_backup,    layout[:backup]       || redis_default_backup
+        set :redis_rdb_file,  layout[:rdb_file]     || redis_default_rdb_file
         set :redis_bind, "###ETH###" if redis_bind_eth
         yield layout if block_given?
       end
