@@ -97,10 +97,13 @@ Capistrano::Configuration.instance(true).load do
 
       desc "validate backup"
       task :verify, :roles => :mysqld_backup do
-        ensure_slave_running
-        retrieve_backup_log
-        check_backup_finished
-        remove_backup_log
+        begin
+          ensure_slave_running
+          retrieve_backup_log
+          check_backup_finished
+        ensure
+          remove_backup_log
+        end
       end
 
       desc "checks that the backup appears to have finished"
