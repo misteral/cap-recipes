@@ -49,7 +49,7 @@ PACKAGE="redis_${SERVER}_${DATE}.tar.gz"
 # S3 has a 5GB limit so we break it up at 4GB.
 # Rejoin later with: cat *.gz.*|tar xzf -
 
-tar czf - --directory "${CURRENT}" "${DATE}" | split -b4G - ${LOCATION}/${PACKAGE}.
+tar czf - --directory "${CURRENT}" "${DATE}" | split -b<%=redis_backup_chunk_size%> - ${LOCATION}/${PACKAGE}.
 
 echo "==========================="
 echo "  PACKAGE LISTING"

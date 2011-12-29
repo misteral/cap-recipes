@@ -27,6 +27,7 @@ Capistrano::Configuration.instance(true).load do
     set :redis_backup_script, File.join(File.dirname(__FILE__),'redis_backup_s3.sh')
     set :redis_backup_script_path, "/root/script/redis_backup_s3.sh"
     set :redis_backup_location, "/mnt/redis_backups"
+    set :redis_backup_chunk_size, "250M"
 
     set(:redis_layout) {
       [{:path => redis_base_path }] #if there's only the default then use the root of the path.

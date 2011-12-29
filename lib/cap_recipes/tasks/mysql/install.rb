@@ -22,6 +22,7 @@ Capistrano::Configuration.instance(true).load do
     set :mysql_backup_stop_sql_thread, false
     set :mysql_backup_script, File.join(File.dirname(__FILE__),'mysql_backup_s3.sh')
     set :mysql_backup_script_path, "/root/script/mysql_backup_s3.sh"
+    set :mysql_backup_chunk_size, "250M"
 
     def mysql_client_cmd(cmd)
       command = []
@@ -92,7 +93,7 @@ Capistrano::Configuration.instance(true).load do
       task :trigger, :roles => :mysqld_backup do
         upload_backup_script
         remove_backup_log
-        sudo %Q{bash -c "echo '/root/script/mysql_backup_s3.sh > #{mysql_backup_log_path} 2>&1' | at now"}
+        sudo %Q{sh -c "echo '/root/script/mysql_backup_s3.sh > #{mysql_backup_log_path} 2>&1' | at now + 2 minutes"}
       end
 
       desc "validate backup"
@@ -128,7 +129,7 @@ Capistrano::Configuration.instance(true).load do
           # It should be started, intervene if it's not.
           begin
             run %Q{test `#{mysql_client_cmd("SHOW SLAVE STATUS\G")} | grep Running | grep -c Yes` = '2'}
-          rescue e
+          rescue => e
             raise Capistrano::Error, "Mysql threads are not running #{e.message}"
           ensure
             run mysql_client_cmd("START SLAVE")
