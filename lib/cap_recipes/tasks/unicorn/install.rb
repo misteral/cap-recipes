@@ -49,8 +49,22 @@ Capistrano::Configuration.instance(true).load do
       utilities.upload_template unicorn_template_path, "#{latest_release}/config/unicorn.rb"
     end
 
+    desc "decrement the number of unicorn worker processes by one"
+    task :ttou, :roles => :app do
+      run "pkill -TTOU -f 'unicorn master'"
+    end
+
+    desc "increment the number of unicorn worker processes by one"
+    task :ttin, :roles => :app do
+      run "pkill -TTIN -f 'unicorn master';true"
+    end
+    
+    task :workers, :roles => :app do
+      run "ps aux | grep -c '[u]nicorn worker';true"
+    end
+    
     task :stop, :roles => :app do
-      run "cd #{latest_release} && kill -QUIT `cat tmp/pids/unicorn.pid`"
+      run "cd #{latest_release} && kill -QUIT `cat tmp/pids/unicorn.pid`;true"
     end
 
     task :start, :roles => :app do
