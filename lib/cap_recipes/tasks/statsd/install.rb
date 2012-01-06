@@ -1,3 +1,4 @@
+# @author Rick Russell <sysadmin.rick@gmail.com>
 require File.expand_path(File.dirname(__FILE__) + '/../graphite/install')
 
 Capistrano::Configuration.instance(true).load do
