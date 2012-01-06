@@ -18,6 +18,7 @@ Capistrano::Configuration.instance(true).load do
     set :nginx_unicorn_init_d, "nginx_unicorn"
     set :nginx_unicorn_root, "/opt/nginx_unicorn"
     set :nginx_unicorn_conf_path, File.join(File.dirname(__FILE__),'nginx.conf')
+    set(:nginx_unicorn_conf_dir) {"#{nginx_unicorn_root}/conf"}
     set :nginx_unicorn_init_d_path, File.join(File.dirname(__FILE__),'nginx_unicorn.init')
     set :nginx_unicorn_stub_conf_path, File.join(File.dirname(__FILE__),'stub_status.conf')
     set :nginx_unicorn_god_path, File.join(File.dirname(__FILE__),'nginx_unicorn.god')
@@ -29,6 +30,7 @@ Capistrano::Configuration.instance(true).load do
     set(:nginx_unicorn_upstream_socket){"#{shared_path}/sockets/unicorn.sock"}
     set(:nginx_unicorn_log_dir) {"#{nginx_unicorn_root}/logs"}
     set(:nginx_unicorn_pid_file) {"#{nginx_unicorn_log_dir}/nginx.pid"}
+    set(:nginx_unicorn_sbin_path_dir) {"#{nginx_unicorn_root}/sbin"}
     set :nginx_unicorn_watcher, nil
     set :nginx_unicorn_user, "nobody"
     set :nginx_unicorn_suppress_runner, false
@@ -36,6 +38,9 @@ Capistrano::Configuration.instance(true).load do
     set :nginx_unicorn_server_name, 'localhost'
     set :nginx_unicorn_app_conf_path, File.join(File.dirname(__FILE__),'app.conf')
     set(:nginx_unicorn_configure_flags) {[
+      "--prefix=#{nginx_unicorn_root}",
+      "--sbin-path=#{nginx_unicorn_sbin_path_dir}",
+      "--pid-path=#{nginx_unicorn_pid_file}",
       "--with-debug",
       "--with-http_gzip_static_module",
       "--with-http_stub_status_module",
@@ -75,14 +80,16 @@ Capistrano::Configuration.instance(true).load do
       utilities.git_clone_or_pull "git://github.com/yaoweibin/nginx_syslog_patch.git", "#{nginx_unicorn_patch_dir}/nginx_syslog_patch"
       utilities.git_clone_or_pull "git://github.com/newobj/nginx-x-rid-header.git", "#{nginx_unicorn_patch_dir}/nginx-x-rid-header"
       run "cd #{nginx_unicorn_source_dir} && #{sudo} sh -c 'patch -p1 < #{nginx_unicorn_patch_dir}/nginx_syslog_patch/syslog_#{nginx_unicorn_ver.split('-').last}.patch'"
-      run "cd #{nginx_unicorn_source_dir} && #{sudo} ./configure --prefix=#{nginx_unicorn_root} #{nginx_unicorn_configure_flags.join(" ")} && #{sudo} make && #{sudo} make install"
+      run "cd #{nginx_unicorn_source_dir} && #{sudo} ./configure #{nginx_unicorn_configure_flags.join(" ")} && #{sudo} make"
+      sudo "mv #{nginx_unicorn_sbin_path_dir}/nginx #{nginx_unicorn_sbin_path_dir}/nginx.old" #move it out of the way in case it's running so a new one can be installed.
+      run "cd #{nginx_unicorn_source_dir} && #{sudo} make install"
     end
 
     task :setup, :roles => :app do
-      sudo "mkdir -p #{nginx_unicorn_root}/conf/sites-available #{nginx_unicorn_root}/conf/sites-enabled #{nginx_unicorn_log_dir}"
-      utilities.sudo_upload_template nginx_unicorn_conf_path,"#{nginx_unicorn_root}/conf/nginx.conf"
-      utilities.sudo_upload_template nginx_unicorn_stub_conf_path,"#{nginx_unicorn_root}/conf/sites-available/stub_status.conf"
-      sudo "ln -sf #{nginx_unicorn_root}/conf/sites-available/stub_status.conf #{nginx_unicorn_root}/conf/sites-enabled/stub_status.conf"
+      sudo "mkdir -p #{nginx_unicorn_conf_dir}/sites-available #{nginx_unicorn_conf_dir}/sites-enabled #{nginx_unicorn_log_dir}"
+      utilities.sudo_upload_template nginx_unicorn_conf_path,"#{nginx_unicorn_conf_dir}/nginx.conf"
+      utilities.sudo_upload_template nginx_unicorn_stub_conf_path,"#{nginx_unicorn_conf_dir}/sites-available/stub_status.conf"
+      sudo "ln -sf #{nginx_unicorn_conf_dir}/sites-available/stub_status.conf #{nginx_unicorn_conf_dir}/sites-enabled/stub_status.conf"
       utilities.sudo_upload_template nginx_unicorn_init_d_path,"/etc/init.d/#{nginx_unicorn_init_d}", :mode => "u+x"
       utilities.sudo_upload_template nginx_unicorn_logrotate_path,"/etc/logrotate.d/#{nginx_unicorn_init_d}"
     end
@@ -98,7 +105,7 @@ Capistrano::Configuration.instance(true).load do
     end
 
     task :remove_default, :roles => :app do
-      sudo "rm -f #{nginx_unicorn_root}/sites-enabled/default"
+      sudo "rm -f #{nginx_unicorn_conf_dir}/sites-enabled/default"
     end
 
     desc "Watch Nginx and Unicorn Workers with GOD"
