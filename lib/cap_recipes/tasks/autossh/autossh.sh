@@ -24,14 +24,15 @@ DAEMON=/usr/bin/autossh
 SCRIPTNAME=/etc/init.d/${NAME}
 DESC="Autossh Tunnel"
 MPORT=5122
-TUNNEL="-L 3305:"<%=ipaddress(mysql_listen_interface)%>":3306"
+TUNNEL="-L 3305:"##MASTER##":3306"
 REMOTEUSER=<%=mysql_repl_user%>
-REMOTESERVER=<%=autossh_remote_hostname%>
+REMOTESERVER=##AUTOSSH_REMOTE##
 KEYFILE="/home/repl/.ssh/id_rsa.pub"
+
+export AUTOSSH_PIDFILE=${PIDFILE}
 
 test -x $DAEMON || exit 0
 
-export AUTOSSH_PIDFILE=${PIDFILE}
 ASOPT="-M "${MPORT}" -N -f -i "${KEYFILE}" "${TUNNEL}" "${REMOTEUSER}"@"${REMOTESERVER}
 
 #	Function that starts the daemon/service.
