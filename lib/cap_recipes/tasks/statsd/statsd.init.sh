@@ -1,8 +1,16 @@
-#!/bin/bash
+#!/bin/sh
 #
-# StatsD
-# 
-# description: StatsD init.d from Rick Russell - sysadmin.rick@gmail.com
+### BEGIN INIT INFO
+# Provides:             statsd
+# Required-Start:       $all
+# Required-Stop:        $all
+# Default-Start:        2 3 4 5
+# Default-Stop:         0 1 6
+# Short-Description:    statsd
+### END INIT INFO
+#
+# Description: statsd init.d script
+# Rick Russell - sysadmin.rick@gmail.com
 
 prog=statsd
 node=/usr/local/bin/node
@@ -29,7 +37,7 @@ start() {
 		# Run as process
 		${node} ${statsd} ${CONFFILE} >> ${LOG} 2>> ${ERRLOG} &
 		RETVAL=$?
-	
+
 		# Store PID
 		echo $! > ${pidfile}
 
@@ -57,11 +65,11 @@ case "$1" in
   start)
 	start
 	;;
-  stop)	
+  stop)
     if [ ! -f ${pidfile} ]; then
 	   echo "Statsd isn't running."
 	else
-	stop  
+	stop
     fi
 	;;
   restart)
