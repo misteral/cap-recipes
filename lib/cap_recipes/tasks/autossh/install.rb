@@ -9,8 +9,6 @@ Capistrano::Configuration.instance(true).load do
       %Q{`ifconfig #{eth} | awk '/inet addr/ {split ($2,A,":"); print A[2]}'`}
     end
 
-
-
     on :start, :only => "deploy:provision" do
       autossh.install
     end
