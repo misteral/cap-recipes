@@ -81,7 +81,7 @@ Capistrano::Configuration.instance(true).load do
       utilities.git_clone_or_pull "git://github.com/newobj/nginx-x-rid-header.git", "#{nginx_unicorn_patch_dir}/nginx-x-rid-header"
       run "cd #{nginx_unicorn_source_dir} && #{sudo} sh -c 'patch -p1 < #{nginx_unicorn_patch_dir}/nginx_syslog_patch/syslog_#{nginx_unicorn_ver.split('-').last}.patch'"
       run "cd #{nginx_unicorn_source_dir} && #{sudo} ./configure #{nginx_unicorn_configure_flags.join(" ")} && #{sudo} make"
-      sudo "mv #{nginx_unicorn_sbin_path_dir}/nginx #{nginx_unicorn_sbin_path_dir}/nginx.old" #move it out of the way in case it's running so a new one can be installed.
+      sudo "mv #{nginx_unicorn_sbin_path_dir}/nginx #{nginx_unicorn_sbin_path_dir}/nginx.old", :on_error => :continue #move it out of the way in case it's running so a new one can be installed.
       run "cd #{nginx_unicorn_source_dir} && #{sudo} make install"
     end
 
