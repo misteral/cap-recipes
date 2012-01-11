@@ -30,7 +30,7 @@ Capistrano::Configuration.instance(true).load do
     set(:nginx_unicorn_upstream_socket){"#{shared_path}/sockets/unicorn.sock"}
     set(:nginx_unicorn_log_dir) {"#{nginx_unicorn_root}/logs"}
     set(:nginx_unicorn_pid_file) {"#{nginx_unicorn_log_dir}/nginx.pid"}
-    set(:nginx_unicorn_sbin_path_dir) {"#{nginx_unicorn_root}/sbin"}
+    set(:nginx_unicorn_sbin_file) {"#{nginx_unicorn_root}/sbin/nginx"}
     set :nginx_unicorn_watcher, nil
     set :nginx_unicorn_user, "nobody"
     set :nginx_unicorn_suppress_runner, false
@@ -39,7 +39,7 @@ Capistrano::Configuration.instance(true).load do
     set :nginx_unicorn_app_conf_path, File.join(File.dirname(__FILE__),'app.conf')
     set(:nginx_unicorn_configure_flags) {[
       "--prefix=#{nginx_unicorn_root}",
-      "--sbin-path=#{nginx_unicorn_sbin_path_dir}",
+      "--sbin-path=#{nginx_unicorn_sbin_file}",
       "--pid-path=#{nginx_unicorn_pid_file}",
       "--with-debug",
       "--with-http_gzip_static_module",
@@ -81,7 +81,6 @@ Capistrano::Configuration.instance(true).load do
       utilities.git_clone_or_pull "git://github.com/newobj/nginx-x-rid-header.git", "#{nginx_unicorn_patch_dir}/nginx-x-rid-header"
       run "cd #{nginx_unicorn_source_dir} && #{sudo} sh -c 'patch -p1 < #{nginx_unicorn_patch_dir}/nginx_syslog_patch/syslog_#{nginx_unicorn_ver.split('-').last}.patch'"
       run "cd #{nginx_unicorn_source_dir} && #{sudo} ./configure #{nginx_unicorn_configure_flags.join(" ")} && #{sudo} make"
-      sudo "mv #{nginx_unicorn_sbin_path_dir}/nginx #{nginx_unicorn_sbin_path_dir}/nginx.old", :on_error => :continue #move it out of the way in case it's running so a new one can be installed.
       run "cd #{nginx_unicorn_source_dir} && #{sudo} make install"
     end
 

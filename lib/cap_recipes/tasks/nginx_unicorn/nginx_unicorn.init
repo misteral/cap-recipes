@@ -11,7 +11,7 @@
 ### END INIT INFO
 
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
-DAEMON=<%=nginx_unicorn_sbin_path_dir%>/nginx
+DAEMON=<%=nginx_unicorn_sbin_file%>
 DAEMON_OPTS="-c <%="#{nginx_unicorn_conf_dir}/nginx.conf"%>"
 NAME=<%=nginx_unicorn_init_d%>
 DESC=<%=nginx_unicorn_init_d%>
