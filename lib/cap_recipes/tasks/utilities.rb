@@ -82,6 +82,10 @@ module Utilities
     sudo "#{apt_get} -qyu --force-yes remove #{packages.join(" ")}"
   end
 
+  def apt_autoremove
+    sudo "#{apt_get} -qy autoremove"
+  end
+
   def apt_update
     sudo "#{apt_get} -qy update"
   end

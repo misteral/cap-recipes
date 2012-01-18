@@ -42,9 +42,10 @@ Capistrano::Configuration.instance(true).load do
       after "sdagent:uninstall", "sdagent:unsetup_god"
     end
 
-    desc "uninstall sd-agent"
-    task :uninstall, :roles => :sdagent do
-      utilities.sudo_with_input "apt-get remove sd-agent", /\?/,"Y\n"
+    desc "uninstall sd-agent from all roles"
+    task :uninstall, :on_error => :continue do
+      utilities.apt_remove "sd-agent"
+      utilities.apt_autoremove
     end
 
     desc "setup god to watch sdagent"
