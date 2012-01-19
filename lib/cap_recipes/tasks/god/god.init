@@ -22,7 +22,9 @@ PIDFILE="<%=god_pid_path%>" ; mkdir -p `dirname $PIDFILE`
 DAEMON=<%=god_daemon%>
 DAEMON_ARGS="-c $CONF -P $PIDFILE --log-level $LEVEL <%= god_log_path ? '--log $LOGFILE' : '' %>"
 SCRIPTNAME=<%=god_init%>
+# Modify God's Socket to allow any user to interact with the god cli
 OPEN_SOCKET=<%= god_open_socket ? 'yes' : 'no' %>
+# When called as an rc.d Kill script use terminate instead of stop to stop all watched children as well.
 USE_TERMINATE_ON_KILL=<%= god_use_terminate_on_kill ? 'yes' : 'no' %>
 
 # Exit if the package is not installed

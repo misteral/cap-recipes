@@ -16,8 +16,8 @@ Capistrano::Configuration.instance(true).load do
     set :god_git_ref, "v0.11.0"
     set :god_git_repo, "git://github.com/mojombo/god.git"
     set :god_log_level, "info" # [debug|info|warn|error|fatal]
-    set :god_open_socket, true
-    set :god_use_terminate_on_kill, true
+    set :god_open_socket, false
+    set :god_use_terminate_on_kill, false
 
     def cmd(cmd,options={})
       r_env = options[:rails_env] || rails_env
