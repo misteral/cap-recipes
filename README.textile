@@ -5,16 +5,16 @@ A collection of useful capistrano recipes I have been using in production on a n
 This gem is best suited for ruby (and rails) projects which deploy using Apache and Phusion Passenger.
 Worth noting is that the installation tasks are for systems using aptitude package management.
 
-The overall vision for this project is simply to collect a number of classic, generic recipes 
-for common issues which can then be used by the community. 
+The overall vision for this project is simply to collect a number of classic, generic recipes
+for common issues which can then be used by the community.
 
-Feel free to improve upon this recipe collection by adding your own! 
+Feel free to improve upon this recipe collection by adding your own!
 
 Currently included recipes in this gem:
 
- * Ruby Setup  
+ * Ruby Setup
  * Rubygems Management
- * Apache Server     
+ * Apache Server
  * Phusion Passenger
  * Memcached Management
  * ThinkingSphinx Daemon
@@ -24,9 +24,9 @@ Currently included recipes in this gem:
  * Whenever Cron Scheduling
  * MongoDB Management
  * Aptitude Package Management
- * Gitosis Git Repository Hosting 
- 
-Check out the USAGE section below for specific tasks included in the recipes. 
+ * Gitosis Git Repository Hosting
+
+Check out the USAGE section below for specific tasks included in the recipes.
 
 h2. INSTALLATION
 
@@ -81,7 +81,7 @@ manage.rb
   * apache:stop - stops the apache server
   * apache:start - starts the apache server
   * apache:restart - restarts the apache server
-    
+
 install.rb
 
   * apache:install - installs apache and dependencies onto a debian system
@@ -92,7 +92,7 @@ h4. Configuration
 
 
   * None required
-  
+
 
 h4. Tasks
 
@@ -119,7 +119,7 @@ manage.rb
   * rubygems:cleanup - Performs a cleanup for all outdated rubygems
   * rubygems:install - Installs a specifed gem from name inputted on console
   * rubygems:uninstall - Removes a specified rubygem from name inputted on console
-  
+
 install.rb
 
  * rubygems:install - Installs rubygems by downloading package and running setup.rb
@@ -147,8 +147,8 @@ manage.rb
 
   * deploy:start - Starts the apache server (if needed)
   * deploy:stop  - Stops the apache server (if needed)
-  * deploy:restart - Touches the restart.txt file 
-      
+  * deploy:restart - Touches the restart.txt file
+
 install.rb
 
  * passenger:install - Installs the passenger gem, compiles the module silently, and adds the necessary configuration
@@ -177,7 +177,7 @@ manage.rb
   * rails:ping - pings the server to start a passenger instance (reduces downtime)
   * rails:sweep:cache - performs a file cache sweep in production
   * rails:sweep:log - performs a log sweep in production
-      
+
 hooks.rb
 
 <pre><code>
@@ -235,7 +235,7 @@ manage.rb
   * backgroundrb:restart - restart backgroundrb workers
   * backgroundrb:symlink_config - copy backgroundrb.yml from shared/config to release
   * backgroundrb:tail - tails the backgroundrb log file in production
-      
+
 hooks.rb
 
 <pre><code>
@@ -326,11 +326,11 @@ manage.rb
   * memcache:start - starts the memcache daemon
   * memcache:stop  - stops the memcache daemon
   * memcache:restart - restarts the memcache daemon
-    
+
 install.rb
 
   * memcache:install - Installs memcache aptitude package and rubygem
-    
+
 hooks.rb
 
 <pre><code>
@@ -459,31 +459,31 @@ to browse all available utility methods. A few are listed below:
  * utilities.config_gsub(file, findPattern, replaceString)
  ** Replaces the @findPattern@ with @replaceString@ within specified file on server
  ** # utilities.config_gsub('/etc/example', /\#(option:.*?\n)/im, "\\1")
- 
- * utilities.ask(question, default) 
+
+ * utilities.ask(question, default)
  ** Asks the user a question on the command-line and returns the response
  ** utilities.ask('What is your name?', 'John')
- 
- * utilities.yes?(question) 
+
+ * utilities.yes?(question)
  ** Asks the user a yes or no question on the command-line and returns boolean result
  ** utilities.yes?('Proceed with installation?')
- 
+
  * utilities.apt_install(packages)
  ** Installs all specified aptitude packages silently without user intervention
  ** utilities.apt_install %w[package1 package2]
- 
+
  * utilities.sudo_upload(local_path, remote_dest, options)
  ** Uploads a file to a temporary location and then sudo moves it to specified remote destination
  ** utilities.sudo_upload('/local/path/to/file', '/remote/path/to/destination', :mode => 'u+rwx')
- 
+
  * utilities.with_role(role) { ... }
  ** Forces tasks in block to execute only within specific role(s)
  ** This is useful because of certain limitations in the role declaration in capistrano
- 
+
  * utilities.with_credentials(:user => 'jsmith', :password => 'secret') { ... }
  ** Forces tasks in block to execute using the given user/password credentials
  ** This is useful because of certain limitations in capistrano
- 
+
 h2. CONTRIBUTORS
 
 The following people are the reason this library exists:
