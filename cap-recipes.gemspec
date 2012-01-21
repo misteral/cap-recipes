@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name = %q{cap-recipes}
-  s.version = "2.0.0"
+  s.version = "2.0.1"
 
   s.authors = ["Donovan Bray","Nathan Esquenazi"]
   s.date = Time.now.utc.strftime("%Y-%m-%d")
@@ -16,6 +16,4 @@ Gem::Specification.new do |s|
   s.rubyforge_project = %q{cap-recipes}
   s.rubygems_version = %q{1.7.2}
   s.summary = %q{Battle-tested capistrano recipes for passenger, delayed_job, and more}
-
 end
-
