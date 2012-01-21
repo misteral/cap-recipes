@@ -1,27 +1,28 @@
 =begin
 Using Jeweler for Gem Packaging...
 
-  * Update the version and release version to github: 
+  * Update the version and release version to github:
     $ rake version:bump:patch && rake release && rake gemcutter:release
-    
+
   * Build and install the latest version locally:
     $ rake install
-    
+
 =end
 
 require 'rake'
 require 'rake/testtask'
-require 'rake/rdoctask'
+require 'rdoc'
+require 'rdoc/task'
 
 begin
   require 'jeweler'
   Jeweler::Tasks.new do |s|
     s.name = "cap-recipes"
-    s.summary = %Q{Battle-tested capistrano recipes for passenger, delayed_job, and more}
-    s.email = "nesquena@gmail.com"
+    s.summary = %Q{Battle-tested capistrano recipes for debian based distributions}
+    s.email = "nesquena@gmail.com donnoman@donovanbray.com"
     s.homepage = "http://github.com/nesquena/cap-recipes"
-    s.description = "Battle-tested capistrano recipes for debian, passenger, apache, delayed_job, juggernaut, rubygems, backgroundrb, rails and more"
-    s.authors = ["Nathan Esquenazi"]
+    s.description = "Battle-tested capistrano recipes for debian based distributions, passenger, apache, nginx, delayed_job, juggernaut, rubygems, backgroundrb, rails, riak, mongo and more"
+    s.authors = ["Nathan Esquenazi","Donovan Bray"]
     s.rubyforge_project = 'cap-recipes'
   end
   Jeweler::GemcutterTasks.new
@@ -29,7 +30,7 @@ rescue LoadError
   puts "Jeweler (or a dependency) not available. Install it with: sudo gem install jeweler"
 end
 
-Rake::RDocTask.new do |rdoc|
+RDoc::Task.new do |rdoc|
   rdoc.rdoc_dir = 'rdoc'
   rdoc.title    = 'cap-recipes'
   rdoc.options << '--line-numbers' << '--inline-source'
