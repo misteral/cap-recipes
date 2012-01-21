@@ -1,26 +1,17 @@
+require File.expand_path(File.dirname(__FILE__) + '/settings')
+
 Capistrano::Configuration.instance(true).load do
 
-  set :apache_init_path, "/etc/init.d/apache2"
-
   namespace :apache do
-    
-    desc "Stops the apache web server"
-    task :stop, :roles => :web do
-      puts "Stopping the apache server"
-      sudo "#{apache_init_path} stop"
+    %w(start stop restart).each do |t|
+      desc "#{t} the apache web server"
+      task t.to_sym do
+        utilities.with_role(apache_role) do
+          puts "#{t}ing the apache server"
+          sudo "#{apache_init_path} #{t}"
+        end
+      end
     end
 
-    desc "Starts the apache web server"
-    task :start, :roles => :web do
-      puts "Starting the apache server"
-      sudo "#{apache_init_path} start"
-    end
-
-    desc "Restarts the apache web server"
-    task :restart, :roles => :web do
-      puts "Restarting the apache server"
-      sudo "#{apache_init_path} restart"
-    end
-    
   end
 end
