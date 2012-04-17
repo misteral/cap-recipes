@@ -1,0 +1,13 @@
+<%= rsyslog_client_regexed_programs.map{|p| "/var/log/#{p}.log"}.join("\n") %>
+{
+	rotate 14
+	daily
+	notifempty
+	missingok
+	compress
+	delaycompress
+	sharedscripts
+	postrotate
+		reload rsyslog >/dev/null 2>&1 || true
+	endscript
+}
