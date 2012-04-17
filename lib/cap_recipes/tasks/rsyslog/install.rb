@@ -5,9 +5,9 @@ Capistrano::Configuration.instance(true).load do
   namespace :rsyslog_server do
     roles[:rsyslog_server]
     set :rsyslog_server_conf, File.join(File.dirname(__FILE__),'rsyslog-server.conf')
-    set :rsyslog_demandchain_conf, File.join(File.dirname(__FILE__),'demandchain-rlog.conf')
+    set :rsyslog_default_conf, File.join(File.dirname(__FILE__),'default-rsyslog.conf')
     set :rsyslog_cron, File.join(File.dirname(__FILE__),'rsyslog-compress.cron')
-    set :rsyslog_apache_conf, File.join(File.dirname(__FILE__),'observer.conf')
+    set :rsyslog_apache_conf, File.join(File.dirname(__FILE__),'rsyslog_apache.conf')
     set :log_ananalyzer_src, "http://download.adiscon.com/loganalyzer/loganalyzer-3.2.2.tar.gz"
     set(:log_ananalyzer_ver) { log_ananalyzer_src.match(/\/([^\/]*)\.tar\.gz$/)[1] }
 
@@ -27,7 +27,7 @@ Capistrano::Configuration.instance(true).load do
 
     desc "Install Log Analyzer Web Interface"
     task :install_log_analyzer, :roles => :rsyslog_server do
-      sudo "mkdir -p /var/www/observer"
+      sudo "mkdir -p /var/www/rsyslog"
       run "cd /usr/local/src && #{sudo} wget --tries=2 -c --progress=bar:force #{log_ananalyzer_src} && #{sudo} tar --no-same-owner -xzf #{log_ananalyzer_ver}.tar.gz"
       run "cd /usr/local/src/#{log_ananalyzer_ver} && #{sudo} ./configure && #{sudo} make && #{sudo} make install"
     end
@@ -35,12 +35,12 @@ Capistrano::Configuration.instance(true).load do
     desc "Setup rsyslogd server configuration file"
     task :setup_rsyslog_server_conf, :roles => :rsyslog_server do
       utilities.upload_template rsyslog_server_conf, "/tmp/rsyslog-server.conf"
-      utilities.upload_template rsyslog_demandchain_conf, "/tmp/demandchain-rlog.conf"
-      utilities.upload_template rsyslog_apache_conf, "/tmp/observer.conf"
+      utilities.upload_template rsyslog_default_conf, "/tmp/default-rsyslog.conf"
+      utilities.upload_template rsyslog_apache_conf, "/tmp/rsyslog-apache.conf"
       utilities.upload_template rsyslog_cron, "/tmp/rsyslog-compress.cron"
       sudo "mv /tmp/rsyslog-server.conf /etc/rsyslog.conf"
-      sudo "mv /tmp/demandchain-rlog.conf /etc/rsyslog.d/demandchain-rlog.conf"
-      sudo "mv /tmp/observer.conf /etc/apache2/sites-available/observer.conf"
+      sudo "mv /tmp/default-rsyslog.conf /etc/rsyslog.d/default-rsyslog.conf"
+      sudo "mv /tmp/rsyslog-apache.conf /etc/apache2/sites-available/rsyslog-apache.conf"
       sudo "mv /tmp/rsyslog-compress.cron /etc/cron.hourly/rsyslog-bz2"
     end
 
